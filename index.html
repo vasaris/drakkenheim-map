@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Драккенхейм — карта кампании (WM)</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="ui">
+<div class="app">
+  <div class="topbar">
+    <span class="brand"><b>Драккенхейм</b> · карта WM</span>
+    <span class="mode-pill" id="modePill">Карта кампании</span>
+    <label class="btn" for="imgPick">Загрузить карту</label>
+    <input type="file" id="imgPick" accept="image/*">
+    <button class="btn" id="fitBtn">В размер</button>
+    <span class="spacer"></span>
+    <button class="btn" id="masterBtn">Мастер</button>
+    <button class="btn edit-only" id="menuBtn">Данные ▾</button>
+  </div>
+
+  <div class="stage">
+    <div class="viewport" id="viewport">
+      <div class="world" id="world">
+        <svg class="canvas" id="canvas" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- feathered Haze edges -->
+            <filter id="hazeFeather" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB">
+              <feGaussianBlur id="hazeBlur" in="SourceGraphic" stdDeviation="14"/>
+            </filter>
+            <!-- subtle drifting grain (variant C texture) -->
+            <filter id="hazeGrain" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+              <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="2" seed="11" stitchTiles="stitch" result="n"/>
+              <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.07 0" result="grain"/>
+              <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="grain"/></feMerge>
+            </filter>
+            <!-- density mask: fogbase = dense Haze; per-zone polygons reduce density (feathered) -->
+            <mask id="fogmask">
+              <g id="fogmaskg" filter="url(#hazeFeather)">
+                <rect id="fogbase" x="0" y="0" width="100" height="100" fill="#ebebeb"/>
+              </g>
+            </mask>
+          </defs>
+          <image id="mapimg" x="0" y="0" width="0" height="0" preserveAspectRatio="none"></image>
+          <g id="zonesLayer"></g>
+          <rect id="fogract" x="0" y="0" width="0" height="0" fill="#5e4488"
+                opacity="0" mask="url(#fogmask)" filter="url(#hazeGrain)" pointer-events="none"></rect>
+          <g id="markersLayer"></g>
+          <g id="drawLayer"></g>
+        </svg>
+      </div>
+      <div class="empty-hint" id="emptyHint">
+        <div class="card">
+          Нажми <b>«Загрузить карту»</b> и выбери разворот карты города из своей книги.
+          Карта останется только в этом браузере — в сеть и в репозиторий она не уходит.
+        </div>
+      </div>
+    </div>
+
+    <aside class="side hidden" id="side"></aside>
+  </div>
+</div>
+
+<!-- player dossier popup (viewer) -->
+<div class="pop" id="pop">
+  <span class="x" id="popX">✕</span>
+  <span class="pop-band" id="popBand"></span>
+  <h3 id="popH"></h3>
+  <p id="popP"></p>
+</div>
+
+<!-- master login (visible "Мастер" button; alternative to ?edit=1) -->
+<div class="modal" id="masterModal">
+  <div class="box">
+    <h2>Вход мастера</h2>
+    <p>Введи пароль мастера, чтобы открыть авторские инструменты и расшифровать GM-заметки.
+       Пароль нигде не сохраняется — только на эту сессию.</p>
+    <input type="password" id="masterPw" placeholder="Пароль мастера" autocomplete="off">
+    <div class="err" id="masterErr"></div>
+    <div class="btnrow" style="justify-content:flex-end;">
+      <button class="btn" id="masterCancel">Отмена</button>
+      <button class="btn gold" id="masterOk">Войти</button>
+    </div>
+  </div>
+</div>
+
+<!-- data menu (editor only) -->
+<div class="modal" id="menuModal">
+  <div class="box">
+    <h2>Данные карты</h2>
+    <p>Правки локальны (этот браузер). В канон они попадают только ручным коммитом экспортированных
+       файлов. Картинка карты не экспортируется и в репозиторий не идёт.</p>
+    <div class="btnrow">
+      <button class="btn gold" id="exportZones">Экспорт data/zones.json</button>
+      <button class="btn gold" id="exportMarkers">Экспорт data/markers.json</button>
+    </div>
+    <div class="btnrow">
+      <button class="btn warn" id="resetWork">Сбросить правки (загрузить из репо)</button>
+      <button class="btn" id="menuClose" style="margin-left:auto;">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<div class="banner" id="banner"><span id="bannerMsg"></span><span class="bx" id="bannerX">✕</span></div>
+<div class="toast" id="toast"></div>
+
+<script src="js/app.js"></script>
+</body>
+</html>

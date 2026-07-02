@@ -1,0 +1,8 @@
+assets/*
+!assets/.gitkeep
+*.pdf
+*.jpg
+*.jpeg
+*.png
+*.webp
+.DS_Store
