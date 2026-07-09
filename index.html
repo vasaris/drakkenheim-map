@@ -57,6 +57,8 @@
       </div>
     </div>
 
+    <div id="map"></div>
+
     <aside class="side hidden" id="side"></aside>
   </div>
 </div>
@@ -104,6 +106,32 @@
 <div class="banner" id="banner"><span id="bannerMsg"></span><span class="bx" id="bannerX">✕</span></div>
 <div class="toast" id="toast"></div>
 
-<script src="js/app.js"></script>
+<script>
+(function () {
+  var params = new URLSearchParams(location.search);
+  if (params.get('engine') === 'leaflet') {
+    document.getElementById('viewport').style.display = 'none';
+    document.getElementById('map').style.display = 'block';
+
+    var css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = 'js/vendor/leaflet/leaflet.css';
+    document.head.appendChild(css);
+
+    var leaflet = document.createElement('script');
+    leaflet.src = 'js/vendor/leaflet/leaflet.js';
+    leaflet.onload = function () {
+      var engine = document.createElement('script');
+      engine.src = 'js/map-engine.js';
+      document.body.appendChild(engine);
+    };
+    document.body.appendChild(leaflet);
+  } else {
+    var app = document.createElement('script');
+    app.src = 'js/app.js';
+    document.body.appendChild(app);
+  }
+})();
+</script>
 </body>
 </html>

@@ -5,4 +5,10 @@ assets/*
 *.jpeg
 *.png
 *.webp
+!js/vendor/leaflet/images/*.png
 .DS_Store
+
+# tile pyramid: served from a local symlink, never committed (audited — *.png alone
+# does not catch the symlink itself)
+tiles
+tiles/

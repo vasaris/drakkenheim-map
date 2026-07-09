@@ -32,7 +32,8 @@ button.btn.warn{border-color:#6a2b2b;color:#e7a9a9;}
 body:not(.edit) .edit-only{display:none!important;}
 
 /* stage / viewport */
-.stage{flex:1;display:flex;min-height:0;}
+.stage{flex:1;display:flex;min-height:0;position:relative;}
+#map{position:absolute;inset:0;background:var(--void);display:none;}
 .viewport{flex:1;position:relative;overflow:hidden;cursor:grab;
   background:radial-gradient(900px 600px at 50% 40%,#1a1320 0%,#0a0910 70%);}
 .viewport.grabbing{cursor:grabbing;}
