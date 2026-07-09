@@ -11,8 +11,6 @@
   <div class="topbar">
     <span class="brand"><b>Драккенхейм</b> · карта WM</span>
     <span class="mode-pill" id="modePill">Карта кампании</span>
-    <label class="btn" for="imgPick">Загрузить карту</label>
-    <input type="file" id="imgPick" accept="image/*">
     <button class="btn" id="fitBtn">В размер</button>
     <span class="spacer"></span>
     <button class="btn" id="masterBtn">Мастер</button>
@@ -41,19 +39,14 @@
               </g>
             </mask>
           </defs>
-          <image id="mapimg" x="0" y="0" width="0" height="0" preserveAspectRatio="none"></image>
+          <rect id="worldBorder" x="0" y="0" width="0" height="0" fill="none" stroke="#4a4658"
+                stroke-width="1" vector-effect="non-scaling-stroke" pointer-events="none"></rect>
           <g id="zonesLayer"></g>
           <rect id="fogract" x="0" y="0" width="0" height="0" fill="#5e4488"
                 opacity="0" mask="url(#fogmask)" filter="url(#hazeGrain)" pointer-events="none"></rect>
           <g id="markersLayer"></g>
           <g id="drawLayer"></g>
         </svg>
-      </div>
-      <div class="empty-hint" id="emptyHint">
-        <div class="card">
-          Нажми <b>«Загрузить карту»</b> и выбери разворот карты города из своей книги.
-          Карта останется только в этом браузере — в сеть и в репозиторий она не уходит.
-        </div>
       </div>
     </div>
 
@@ -103,7 +96,6 @@
   </div>
 </div>
 
-<div class="banner" id="banner"><span id="bannerMsg"></span><span class="bx" id="bannerX">✕</span></div>
 <div class="toast" id="toast"></div>
 
 <script>

@@ -2,15 +2,16 @@
 /* Drakkenheim WM — interactive city map.
    Public site = VIEWER (player content + amethyst Haze fog of war).
    EDITOR = local-only, enabled with ?edit=1 (a local authoring mode, NOT access control).
-   Map image: never committed — file-picker at runtime, cached as a Blob in IndexedDB.
+   No raster: v1 draws zones/markers over a fixed empty world (no upload/cache pipeline).
    GM secret (gmText) is AES-GCM encrypted; the master password is entered at runtime ONLY,
    never stored in code / localStorage / IndexedDB. Public data/*.json holds only ciphertext for gmText.
-   Polygon/marker coords are NORMALIZED 0..1 of the natural image size. */
+   Polygon/marker coords are NORMALIZED 0..1 of the v1 world size. */
 
 let   EDIT    = new URLSearchParams(location.search).get("edit") === "1";   // runtime: ?edit=1 OR "Мастер" unlock
-const LS_IMG  = "dk_map_image_v1";   // legacy localStorage key (migrated into IndexedDB, then removed)
-const IDB_NAME="dk_map_db", IDB_STORE="img", IDB_KEY="map";   // map image cached as a Blob (no ~5MB quota)
 const LS_WORK = "dk_work_v1";        // {zones,markers} — editor working copy (gmText stays ciphertext here)
+// v1 legacy world (landscape master). Не сводить с IMG_W/IMG_H
+// map-engine.js (книжная v2) — расхождение намеренное до Ф3.4/Ф3.6.
+const V1_IMG_W = 5100, V1_IMG_H = 3300;
 
 const STATUS_COLOR = {hidden:"#5a5566", known:"#5b76b8", scouted:"#c19036", explored:"#5fae74"};
 // Haze density via mask luminance = haze alpha: hidden .92 / known .42 / scouted .15 / explored 0
@@ -19,7 +20,7 @@ const MARKER_COLOR = {location:"#c9a85f", faction:"#5b76b8", danger:"#c5453f", s
 const STATUS_LABEL = {hidden:"Скрыто", known:"Слух", scouted:"Разведано", explored:"Открыто"};
 const TYPE_LABEL   = {location:"Локация", faction:"Фракция", danger:"Опасность", secret:"Секрет", hub:"Хаб"};
 
-let S = { meta:{imgW:0, imgH:0}, image:null, zones:[], markers:[] };
+let S = { meta:{imgW:V1_IMG_W, imgH:V1_IMG_H}, zones:[], markers:[] };
 let view = {x:0, y:0, scale:1};
 let sel = null;            // {kind:'zone'|'marker', id}
 let drawing = null;        // {points:[[nx,ny]...], redraw?, id?}
@@ -32,10 +33,10 @@ const gmPlain={};              // "z:"/"m:"+id -> decrypted gmText — in-memory
 const SVGNS = "http://www.w3.org/2000/svg";
 const $ = s => document.querySelector(s);
 const viewport=$("#viewport"), world=$("#world"), canvas=$("#canvas");
-const mapimg=$("#mapimg"), zonesLayer=$("#zonesLayer"), markersLayer=$("#markersLayer");
+const worldBorder=$("#worldBorder"), zonesLayer=$("#zonesLayer"), markersLayer=$("#markersLayer");
 const drawLayer=$("#drawLayer"), fogract=$("#fogract"), fogmask=$("#fogmask"), fogbase=$("#fogbase");
 const fogmaskg=$("#fogmaskg"), hazeBlur=$("#hazeBlur");
-const side=$("#side"), emptyHint=$("#emptyHint"), modePill=$("#modePill");
+const side=$("#side"), modePill=$("#modePill");
 
 boot();
 
@@ -44,10 +45,9 @@ async function boot(){
   modePill.textContent = EDIT ? "Режим автора · локально" : "Карта кампании";
   modePill.classList.toggle("gm", EDIT);
   await loadData();
-  await restoreImage();
   wireUI();
   applyImage();
-  if(S.meta.imgW) fitView();
+  fitView();
   render();
 }
 
@@ -112,72 +112,16 @@ async function unlockGM(password){
 }
 function lockGM(){ gmKey=null; gmSalt=null; for(const k in gmPlain) delete gmPlain[k]; }
 
-/* ---------- map image (file-picker -> IndexedDB Blob cache; never committed) ---------- */
-function idbOpen(){
-  return new Promise((res,rej)=>{
-    if(!("indexedDB" in window) || !window.indexedDB){ rej(new Error("no-idb")); return; }
-    let rq; try{ rq=indexedDB.open(IDB_NAME,1); }catch(e){ rej(e); return; }
-    rq.onupgradeneeded=()=>rq.result.createObjectStore(IDB_STORE);
-    rq.onsuccess=()=>res(rq.result);
-    rq.onerror=()=>rej(rq.error);
-  });
-}
-function idbReq(mode, fn){
-  return idbOpen().then(db=>new Promise((res,rej)=>{
-    const tx=db.transaction(IDB_STORE,mode), req=fn(tx.objectStore(IDB_STORE));
-    tx.oncomplete=()=>res(req ? req.result : undefined);
-    tx.onerror=()=>rej(tx.error); tx.onabort=()=>rej(tx.error);
-  }));
-}
-const idbPut=(val)=>idbReq("readwrite", st=>st.put(val, IDB_KEY));
-const idbGet=()=>idbReq("readonly",  st=>st.get(IDB_KEY));
-
-async function restoreImage(){
-  // one-time migration: legacy localStorage image -> IndexedDB, then drop the LS key
-  try{
-    const legacy=readJSON(localStorage.getItem(LS_IMG));
-    if(legacy && legacy.image){
-      try{
-        const blob=await (await fetch(legacy.image)).blob();   // dataURL -> Blob
-        await idbPut({blob, imgW:legacy.imgW, imgH:legacy.imgH});
-        localStorage.removeItem(LS_IMG);
-      }catch(e){ /* best-effort migration */ }
-    }
-  }catch(e){}
-  // load cached map from IndexedDB (survives reload, no size limit)
-  try{
-    const rec=await idbGet();
-    if(rec && rec.blob){ setBlobImage(rec.blob, rec.imgW, rec.imgH); }
-  }catch(e){ /* IndexedDB unavailable -> start empty; a save will surface the banner */ }
-}
-function setBlobImage(blob, w, h){
-  if(typeof S.image==="string" && S.image.startsWith("blob:")) URL.revokeObjectURL(S.image);
-  S.image=URL.createObjectURL(blob); S.meta.imgW=w; S.meta.imgH=h;
-}
-function setImageFromFile(file){
-  const url=URL.createObjectURL(file);
-  const im=new Image();
-  im.onload=async ()=>{
-    if(typeof S.image==="string" && S.image.startsWith("blob:")) URL.revokeObjectURL(S.image);
-    S.image=url; S.meta.imgW=im.naturalWidth; S.meta.imgH=im.naturalHeight;
-    applyImage(); fitView(); render(); toast("Карта загружена");
-    try{ await idbPut({blob:file, imgW:im.naturalWidth, imgH:im.naturalHeight}); hideBanner(); }   // full-size, no quota
-    catch(err){ showBanner("Карта не сохранилась в кэш: IndexedDB недоступен (приватный режим?). На эту сессию карта работает; при перезагрузке выбери файл заново."); }
-  };
-  im.onerror=()=>{ URL.revokeObjectURL(url); toast("Не удалось открыть изображение"); };
-  im.src=url;
-}
+/* ---------- v1 world sizing (fixed; no raster) ---------- */
 function applyImage(){
-  if(!S.image){ emptyHint.style.display="flex"; canvas.style.display="none"; return; }
-  emptyHint.style.display="none"; canvas.style.display="block";
   const w=S.meta.imgW, h=S.meta.imgH;
-  mapimg.setAttribute("href", S.image);
-  mapimg.setAttribute("width", w); mapimg.setAttribute("height", h);
+  canvas.style.display="block";
   canvas.setAttribute("width", w); canvas.setAttribute("height", h);
   canvas.setAttribute("viewBox", `0 0 ${w} ${h}`);
   world.style.width=w+"px"; world.style.height=h+"px";
   fogract.setAttribute("width", w); fogract.setAttribute("height", h);
   fogbase.setAttribute("width", w); fogbase.setAttribute("height", h);
+  worldBorder.setAttribute("width", w); worldBorder.setAttribute("height", h);
 }
 
 /* ---------- pan / zoom + coord helpers ---------- */
@@ -230,7 +174,6 @@ function render(){
 }
 function renderZones(){
   zonesLayer.innerHTML="";
-  if(!S.image) return;
   S.zones.forEach(z=>{
     if(!z.polygon || z.polygon.length<3) return;
     const revealed = z.status!=="hidden";
@@ -259,7 +202,7 @@ function renderZones(){
 }
 function renderFog(){
   // Viewer = themed amethyst Haze (4 densities by status); editor shows the full map (no Haze).
-  const on = !EDIT && !!S.image;
+  const on = !EDIT;
   document.body.classList.toggle("haze-on", on);
   if(!on){ clearMaskZones(); return; }
   hazeBlur.setAttribute("stdDeviation", Math.max(3, S.meta.imgW/145).toFixed(1)); // feather scaled to image
@@ -279,7 +222,6 @@ function renderFog(){
 function clearMaskZones(){ fogmaskg.querySelectorAll('polygon[data-zone]').forEach(n=>n.remove()); }
 function renderMarkers(){
   markersLayer.innerHTML="";
-  if(!S.image) return;
   const r=Math.max(5, S.meta.imgW/180);
   S.markers.forEach(m=>{
     if(!EDIT){
@@ -503,10 +445,8 @@ async function doExport(which){
 
 /* ---------- UI wiring ---------- */
 function wireUI(){
-  $("#imgPick").addEventListener("change", e=>{ const f=e.target.files[0]; if(f) setImageFromFile(f); });
   $("#fitBtn").addEventListener("click", fitView);
   $("#popX").addEventListener("click", hidePop);
-  $("#bannerX").addEventListener("click", hideBanner);
   // master entry: visible "Мастер" button (viewer) + password modal — alternative to ?edit=1
   setMasterBtn();
   $("#masterBtn").addEventListener("click", ()=>{ if(EDIT) exitMaster(); else openMasterModal(); });
@@ -561,7 +501,5 @@ function download(name, content){
   const a=document.createElement("a"); a.href=u; a.download=name; a.click();
   setTimeout(()=>URL.revokeObjectURL(u), 1500);
 }
-function showBanner(msg){ $("#bannerMsg").textContent=msg; $("#banner").classList.add("show"); }
-function hideBanner(){ $("#banner").classList.remove("show"); }
 let toastT=null;
 function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"), 2200); }
