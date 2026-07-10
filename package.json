@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "scripts": {
     "test": "playwright test tests/correctness.spec.js",
-    "test:perf": "playwright test tests/perf.spec.js"
+    "test:perf": "playwright test tests/perf.spec.js",
+    "test:gm": "playwright test tests/gm.spec.js",
+    "test:gm-unit": "node --test tests/gm-crypto.spec.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.47.0"

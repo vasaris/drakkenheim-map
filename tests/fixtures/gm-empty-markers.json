@@ -1,0 +1,18 @@
+{
+  "schema": "dk-map/v2",
+  "mapOrientation": "v2",
+  "items": [
+    {
+      "id": "fx_empty_marker_1",
+      "name": "Пустой маркер",
+      "visibleName": "Пустой маркер",
+      "type": "location",
+      "zone": "",
+      "status": "known",
+      "playerText": "Игрокам: текст без GM-секрета.",
+      "gmText": "",
+      "x": 0.5,
+      "y": 0.5
+    }
+  ]
+}

@@ -11,9 +11,10 @@
       "playerText": "Дороги, поля и руины предместий. Здесь начинаются первые вылазки и охота за делериумом.",
       "gmText": {
         "enc": true,
-        "salt": "gC0znyOZLHFopPe/+jWbkA==",
-        "iv": "qdJ/nnW6MkMyyQjN",
-        "ct": "bE3H3RHOrchbNXRsePaGqrntqu8A3Yab2F7h7qqHfq2MnEhIlXi4CJrw94g8iQkJgHUdr5ugLqls7KwvHip/AYdN6O89Jw0xNqbfp9mquWE+M4UucVTDHwkwDwD03lQ7c0IR9xjjOYDx09xKtxTsIdaPt7ZEAxNRyNw1xNLG5zNaWXAoq3JkM3vFk2WqFumGM/tt0pz1HjFGjupn4AnfvN5C9SdnblvUuOpSSvt+h93YqMS9Vh7AHjg7NXOhhDRamrhfqWf/6wstk+ZWYYWcHc1jA54GESmsthQwEaq5wyCrqXRk"
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "p3RSk44ogPkL88fG",
+        "ct": "Vi2fbEnKWzioDAqSo+9Mk9pPIG7nqmJiQAnroxnHzSpY8+w8FELSH+F8nB9VUpWC3usOt9EcRB27chaA7iCaCNHVztrVkaiNmcBJmkuFBPblBqTfISDEot+nsGaP3l/klmHOCidnabIyc56oi4vPmkkFt30fzG8jCsz7i3SmLDCtF8AoxizuMQRfJ0tUlLrZ8YfjWkRgh3wlpDrynsZE2w6eh6cfE3F5Uf5XlHoP7UNLA8zKCrMEUA/OMHZ91bQVYly/g7L+Vnv5HjLIuhmpDh6n/gO2RpN1sQYT/qHYWCDOzMJO"
       },
       "polygon": [
         [
@@ -67,9 +68,10 @@
       "playerText": "Усадьбы и виноградники Внешнего Города у Королевской дороги, за рекой — северо-западная окраина. Дома стоят пустыми.",
       "gmText": {
         "enc": true,
-        "salt": "gC0znyOZLHFopPe/+jWbkA==",
-        "iv": "3mn5c4o1oGrHMGw5",
-        "ct": "EO9pYB03at3gJxN2dK0p7QbPcHGvBaooRBM/0orB8i1bpQsqjDgmCEglePmPsSjeI6GDd0yQD5574A5/19KYoWOmTYiAjJ5DS7Gj3kXGaXOv069Lq7xJeG5frvAOf53OJ3itis0nL2+bEvs5gN/O3mbWiqnv3qJlZ5GuyU4MtjdWkPD/XNQmYlzXWaIsd7brnQVD9QRjMaFn0GcPPCH5HQ4UXp2hcOFSwnEqbTGwlYbBwcUD8AZELop7edKyNJAu0Gcir/CW0owNBPZzdy05WK+T/M8ty0uuDuR+tpMQgy4="
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "breIpOKBGhBdVE3n",
+        "ct": "ZCQ633GUzI/2QXRFA2bNP2gq1y+zfG+E4ibN1Tq2fhgDVcduc8Ycz8VOiNlXwxdXCw/OovagHG9R7SYGjzD83mslBx+8D2uFwIWMhTZpvOZjp5lzI0IljXghcpIcbjf8LzsgezZrINVyL/MB5t+mc1uG+FCl1ZQY82N+RV5Sqv846Tnmle1es8cq1ecpLipc6YMPn61GeB9Jm/03f3Kpur55nMqniijmIj4ImJ8YiQO28xrU2vshjQk/YeFKLxKenmJjcb8bMlLFG5sGw+Cw4IJdWuqJw1umUys3Qe6eN2M="
       },
       "polygon": [
         [
@@ -107,9 +109,10 @@
       "playerText": "Южная окраина за стенами: тесные улочки, рынки, бывшие таверны. Раньше — самый людный район.",
       "gmText": {
         "enc": true,
-        "salt": "gC0znyOZLHFopPe/+jWbkA==",
-        "iv": "FF7cvsRgOs5fsRfc",
-        "ct": "WPCatFpAtn4ekuIisEP6hbIhjfC5PEBaO1uPwKjxiR7OXZAXfwuom8JBK3J+EmFiguuB1CkPDJsLH4XZRU31p23gf0JwKSAi2QZiDl323whncrFolG3zR/u0suRH/GwvkoGUbeoq3ko7XUTKEcAcUO0Mlnnqh5TdnDJysPbTynJ7C6QcCbjwTCdAqDnf8D5EbXC23j0QOViTbg44bqzxYZKe2/3wtOf8dQuzpOBH6wSmKxE1Zuw="
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "ao2/bzv5xs6rcf9m",
+        "ct": "k3zVBMJUIDAUGKMjHv1yxiBpQjBuaVsspw+xmnZ835jqypsJ/DINy0MKZ7LDd6V6aPgN3ZIB6tq9OaygdbZRs2kV3G73tk0pw/Sg7y+OIi1kWx/o1itkbTVCkHu7cpvycDJW2QCbB7GifoPpgKvjbFveuq7SMkLpf3ExQpv0RQ7D/8xKP2Sr0hIyWuZlI99RpJEBP1y4yIWnpV3fsVpG62Fh/eXEsX4ByjVaz7g3PlgWPLi0fxI="
       },
       "polygon": [
         [
@@ -151,9 +154,10 @@
       "playerText": "Промзона северо-восточнее Кратера, вдоль Champion's Way — разрушена сильнее всего. Воздух забит пылью и Дымкой.",
       "gmText": {
         "enc": true,
-        "salt": "gC0znyOZLHFopPe/+jWbkA==",
-        "iv": "wcIkup3aguyC6qU1",
-        "ct": "srrhiYHVxxa0/hWrSk4MGLv2Jl207oRkFbc5p5zc9z/Hyt0QsloRAFrduezwkeQzwMK5JkehOMEiJydh0gr9lPimzDGpribaju2L6kTJNNvsZB1FkMI6Zi9d7Z7f5dLhcE1sok/8mle++OUrOpULOGxzCszrLicZwJ0uA+O+P0NWWyJwW9q3Rrf8DS1UfcHpg1nbc8wvXIGSY7VRxJOvJov8JoRaE+wOoZvT3LGuXI2TQPGxDgQo3IPVz25CeTnD0SBtBxwLWblh1idXgXXlYr3O2qDke9jqDybo"
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "tMI2oqHFbKR3m4zo",
+        "ct": "XOy/dJkm4z+WIa3marO6doAveyHtNfvykGfT8m5mmGq6TKCSR9AyLU/k0VqTFWcH609LvG8pB3ndoKBwCBxObk1QutWgGgi7QAf4NbFU9fDPyW93nvdQMUKYhNiHgSy81sjVu1r76X350pAc4jYyQQJ8BIM4CDcYiBGCJNqby46aHkwmg3goeGY9gM+pisdH22jHAIAAoEFMsiHAJqiKbOuavvSGiyzmXvY36N0KVPx1h+vmDIiZJX34CJ/BxhqeBderA577puTxDzGnnQa3COaYWAP8EXxWhBZH"
       },
       "polygon": [
         [
@@ -191,9 +195,10 @@
       "playerText": "Крупнейший район внутреннего города. На границе — Рыночная площадь, где сходятся дороги.",
       "gmText": {
         "enc": true,
-        "salt": "gC0znyOZLHFopPe/+jWbkA==",
-        "iv": "sGwKDuxuxjHs21ll",
-        "ct": "wqtc65StRTTYibMBKkRQb8KnY8en40ZWBF2bEEXpkGasPF1sNAJA3BNlDhFACYuMnvCRaduHDm9G1mjVuoF3n5yMqWKV63T9UKO48tOsMM8Vn8H440BiN69WlQ=="
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "xflfhViEyvRT9DsP",
+        "ct": "vqG1GY3VbQ/U9zoAiKtiodigV+VfafTJT/W90w1m5ae+mtwnG5HZmPy8gMqHXMopvyYxvshLrBCaBSEYXPpHBbVt1JJZ1fKu8hnZiQcdgg/fpHC7OkhkTGqc1Q=="
       },
       "polygon": [
         [
@@ -231,9 +236,10 @@
       "playerText": "Запад у скал Замка Драккен — самая уцелевшая часть. Усадьба Кляйнберг.",
       "gmText": {
         "enc": true,
-        "salt": "gC0znyOZLHFopPe/+jWbkA==",
-        "iv": "ining8NSuGE9wXxL",
-        "ct": "hvhazQlEj1zGTniTjuADcQrDCFgllrMq7FuJNFNvdiWrB893H0I9h6C5hkqcRn73Je5Q6YJrHO03ncI7xEcv6deINUvlXzVNAK2/XKXhzSIUbw9TpkDaTmaB02fFVVgP0Ku9MoPsz99kiPay4Vr22REiBFI+22FfaSWDUAkcDObVoeIxn4XxkgAdAHBwJ1kvi8AJ+cb2xc7D6iNhWKHkZcvGIDTgV7qd1PvjPgoGWXf+xnUYJtFsZMH97mKaLuP8BzsUIenEKkj6lOJtUaP/ee5WWhOpw6A="
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "M20Lh6alARZytNA2",
+        "ct": "j6sUomBl6ppszSC9hpVtsuUinxphb2rdSdz58/fsagByNMeEq+SkwrMR1NukrtuNOyeMdQ2rSSNX1I8lpJlSL/GXmeJud/zkxOP+cxy97mrYX7TI+cHXoOzSr28BDH9YGpJDHf5d+u2Fvqzb5yZBsNKcRhEc/wiM6iIzviz/uvtdu4E/cZT94VKeaTf+/mAfq5gpS/yK3m5GrcBy749nbjl/9Ip/k1AX9JD9pVj9/nOgF3XzMOGnQ1LDKfyZVU1n5VNK9dIEmGSEKCmhYMgIPgCDpDo+HA8="
       },
       "polygon": [
         [
@@ -275,9 +281,10 @@
       "playerText": "Южный внутренний квартал у Храмовых Ворот (Temple Gate). Доминанта — Собор Святого Витрувио.",
       "gmText": {
         "enc": true,
-        "salt": "gC0znyOZLHFopPe/+jWbkA==",
-        "iv": "nit5MNXEKdKsSWxB",
-        "ct": "J1GwZrYIDjCu+LNojZdDrHBF24fQoJ7Sna8PAqUz2lHkbjSadzk7xCaMeNDbibjJdmLPLlLyr97QmcAu/wKPtj3ajXepYOuzEXP+isAmcqMJ56S5gWb9fd7PurJWyhA/b6mPFo20XtMA2TecmbIkcONTpyCfNMpVfQ=="
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "1bx4Vt1MA33craaC",
+        "ct": "XznCZQU+o/r3xb5Eer+Su3YadUxk0jjSJ818xSi03tvpMr+ybUgnm7410xJavL88K7PNtZlo36a3WJl3kp61kC5AgOOCLUqnlwr9oeSBfCr+sYoMcZD5FQAiJGr1+AUEbHNjsbPTr5/hrvTxoNDVh4eAzpP4TJGuug=="
       },
       "polygon": [
         [
@@ -315,9 +322,10 @@
       "playerText": "Тлеющие руины у южной кромки Кратера. Здесь Площадь Резни; за ней Дымка сгущается над воронкой.",
       "gmText": {
         "enc": true,
-        "salt": "gC0znyOZLHFopPe/+jWbkA==",
-        "iv": "7rQq3AWuIJijOGWE",
-        "ct": "80hqhdIiT93o/+zCloHf2/M9IH0XRzQ7RuD7ootV6d+tixTHRO8/p9SLfT8hVNidpdclS1CF7YPueDEkvJOXfh9Rw8A4TwRQ5nruuAVZvXtect1cSBAY/NJaNhnhzkPqATL/PbovltvDm7cuzubB1fffwuNzaf0xziGekJBS8lQbliooTR9hfixQ+BCLul+BkVlpDse1RC3YSxpVvgim3Or2DK3S60kiqLGXHCPLcXp/Vn/RR6luKK9FfwlDgQcfbTpnqzFfSbmfNRfjgEUqBYE="
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "8oeHmO2Hv19jms2/",
+        "ct": "vURg0CSQFyVH3f02mznXMx6W2wu3emSkHFijaZnY6nkAHCL/ygZkx1u7VEUBTo3aCyGfzf6ILwX6ETQwfCwZSReFgukniBGSWE4SPBmp+qTKX0efFEcsoTxozJfO/EP5X5iecCLQFY/v4S8rBbtCGlmVUneb2xYYHt7/5Kyq5OzwQTtKti6ikYLB5QdDUsMVcTi8HEOi/6/zAZjhnaeHfbQ8/pmnHLMxozEtPFhVg5hXcir4Mf/uJk0Q1k+P3MsDRDJ3hCZa2WOD8jUTTP/sxM0="
       },
       "polygon": [
         [
@@ -355,9 +363,10 @@
       "playerText": "Сердце катастрофы под глубокой Дымкой. Туда не ходят без поддержки фракций.",
       "gmText": {
         "enc": true,
-        "salt": "gC0znyOZLHFopPe/+jWbkA==",
-        "iv": "EXnvO0SYzOEmKlps",
-        "ct": "HzfPIhem2IcK3fGbShviFJUhnoVQUbF0aA6ULKR+pBIyNUj5hiJXb0+F5x6EISgELg/6enxpT5ZatdKcNRRU+dVrW0/WO0CclH/6aonFsxDEk4IJc64yjVXs1FdJkrzB+LxYKw8S4RdC2UzHQNrdWwHqm07jgbapD5hrE146bS2DR/zfbuV3ZmZBC29hp84jZ4Q2h0L83OA4uwORNugx2kIHTfOOAjnxmZHz4C7Xxi4gjXRiyTTdOFIuQXclo+oaf0n43JtZq43SFCr3"
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "afXPhCsi7Axz0tkp",
+        "ct": "YSskUA82DPRkJy86znczT9X+srlMInM8BjeD/rysr8WKBbAiPjnooK8U6xXDo2xgDeolw8NjHOhmIBskcAx6ANw59aKuA94we/XCI1QlZDoptrs9+QL4Ed4F2XBKqKN2RAiz9FWD5oKgJuksnw/to0sMw7GVcdXGjDcUVKquYRf0Pq2088+wk6n5ibrZe7dAnGGbD4GYg/hoJqzDQ1/shMYdX3l/zZgbjsPdr3GtmlKbQakJiYu2zRqeY4oDp33+cN1kYvFW8oLmzY1W"
       },
       "polygon": [
         [

@@ -67,10 +67,11 @@
 <!-- master login (visible "Мастер" button; alternative to ?edit=1) -->
 <div class="modal" id="masterModal">
   <div class="box">
-    <h2>Вход мастера</h2>
-    <p>Введи пароль мастера, чтобы открыть авторские инструменты и расшифровать GM-заметки.
+    <h2 id="masterTitle">Вход мастера</h2>
+    <p id="masterDesc">Введи пароль мастера, чтобы открыть авторские инструменты и расшифровать GM-заметки.
        Пароль нигде не сохраняется — только на эту сессию.</p>
     <input type="password" id="masterPw" placeholder="Пароль мастера" autocomplete="off">
+    <input type="password" id="masterPwConfirm" placeholder="Повторите пароль" autocomplete="off" style="display:none;margin-top:8px;">
     <div class="err" id="masterErr"></div>
     <div class="btnrow" style="justify-content:flex-end;">
       <button class="btn" id="masterCancel">Отмена</button>
@@ -113,18 +114,28 @@
     var leaflet = document.createElement('script');
     leaflet.src = 'js/vendor/leaflet/leaflet.js';
     leaflet.onload = function () {
-      var engine = document.createElement('script');
-      engine.src = 'js/map-engine.js';
-      engine.onload = function () {
-        var fog = document.createElement('script');
-        fog.src = 'js/fog-engine.js';
-        document.body.appendChild(fog);
+      // gm-crypto.js — до map-engine.js: не зависит от него, но gm-engine.js нужны оба.
+      var gmcrypto = document.createElement('script');
+      gmcrypto.src = 'js/gm-crypto.js';
+      gmcrypto.onload = function () {
+        var engine = document.createElement('script');
+        engine.src = 'js/map-engine.js';
+        engine.onload = function () {
+          var fog = document.createElement('script');
+          fog.src = 'js/fog-engine.js';
+          document.body.appendChild(fog);
 
-        var markers = document.createElement('script');
-        markers.src = 'js/markers-engine.js';
-        document.body.appendChild(markers);
+          var markers = document.createElement('script');
+          markers.src = 'js/markers-engine.js';
+          document.body.appendChild(markers);
+
+          var gm = document.createElement('script');
+          gm.src = 'js/gm-engine.js';
+          document.body.appendChild(gm);
+        };
+        document.body.appendChild(engine);
       };
-      document.body.appendChild(engine);
+      document.body.appendChild(gmcrypto);
     };
     document.body.appendChild(leaflet);
   } else {

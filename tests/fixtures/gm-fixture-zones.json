@@ -1,0 +1,39 @@
+{
+  "schema": "dk-map/v2",
+  "mapOrientation": "v2",
+  "items": [
+    {
+      "id": "fx_zone_1",
+      "name": "Фикстурная зона",
+      "band": "1-3",
+      "owner": "[TBD]",
+      "status": "known",
+      "playerText": "Игрокам: фикстурный текст зоны.",
+      "gmText": {
+        "enc": true,
+        "v": 2,
+        "salt": "XEtdW2Cj/t1oyw7n1S/HMQ==",
+        "iv": "7VAaVoQngT04ZsX9",
+        "ct": "5LecgjYPVm8H3r7QTRdFL6TOWugWJepYY69eEkBRJj9emXjPAcDrCwP/vFE59NInrXSH3Kz2XbZjDl6eJiMOJyWLig=="
+      },
+      "polygon": [
+        [
+          0.1,
+          0.1
+        ],
+        [
+          0.2,
+          0.1
+        ],
+        [
+          0.2,
+          0.2
+        ],
+        [
+          0.1,
+          0.2
+        ]
+      ]
+    }
+  ]
+}

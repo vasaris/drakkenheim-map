@@ -1,0 +1,33 @@
+{
+  "schema": "dk-map/v2",
+  "mapOrientation": "v2",
+  "items": [
+    {
+      "id": "fx_empty_zone_1",
+      "name": "Пустая зона (без GM-шифра)",
+      "band": "",
+      "owner": "[TBD]",
+      "status": "known",
+      "playerText": "Игрокам: текст без GM-секрета.",
+      "gmText": "",
+      "polygon": [
+        [
+          0.1,
+          0.1
+        ],
+        [
+          0.2,
+          0.1
+        ],
+        [
+          0.2,
+          0.2
+        ],
+        [
+          0.1,
+          0.2
+        ]
+      ]
+    }
+  ]
+}

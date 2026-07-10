@@ -1,0 +1,24 @@
+{
+  "schema": "dk-map/v2",
+  "mapOrientation": "v2",
+  "items": [
+    {
+      "id": "fx_marker_1",
+      "name": "Фикстурный маркер",
+      "visibleName": "Фикстурный маркер (игрокам)",
+      "type": "location",
+      "zone": "",
+      "status": "known",
+      "playerText": "Игрокам: фикстурный текст маркера.",
+      "gmText": {
+        "enc": true,
+        "v": 2,
+        "salt": "XEtdW2Cj/t1oyw7n1S/HMQ==",
+        "iv": "d9O54NKFJrnJK7/R",
+        "ct": "H3DMjlTVrLf2waQvXaYpP4JXtch5Fb6mktDtocN9uW4Xh9oxNcT1mUdirFo6bvMaro0iN1T97jhYpdxQCuEVQxBlTJyjCk6AMQ=="
+      },
+      "x": 0.5,
+      "y": 0.5
+    }
+  ]
+}

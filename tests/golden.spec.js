@@ -1,7 +1,15 @@
-// Ф3.4: золотой тест. Две части:
-//   (8) математическая — миграция v1->v2 инвертируема, штамп на месте, gmText не тронут
-//       (перепроверяется против РЕАЛЬНЫХ файлов data/v2/*.json, не против результата
-//       скрипта в памяти — ловит расхождение "скрипт написал одно, файл содержит другое");
+// Ф3.4/Ф3.5а: золотой тест. Три части:
+//   (8а) геометрическая — миграция v1->v2 инвертируема, штамп на месте (перепроверяется
+//       против РЕАЛЬНЫХ файлов data/v2/*.json, не против результата скрипта в памяти —
+//       ловит расхождение "скрипт написал одно, файл содержит другое");
+//   (8б)+(8в) крипто-инварианты data/v2 (Ф3.5а) — заменяют старый ассерт "gmText
+//       побайтово идентичен v1", который устарел с введением scripts/rotate-passphrase.mjs:
+//       ротация намеренно меняет ct/iv/salt (и легаси-блоки -> v2 при --upgrade), так что
+//       побайтовое совпадение с v1 больше не инвариант. Держит два инварианта, которые
+//       переживают ротацию БЕЗ правок теста: (8б) валидная форма enc-блока (легаси ИЛИ
+//       v2 — см. js/gm-crypto.js isEnc/isLegacyBlock, тот же словарь понятий) и 1:1
+//       соответствие "зашифровано/не зашифровано" с v1 по каждому id; (8в) нет ни одного
+//       плейнтекстового gmText в data/v2 (ни один секрет не мог "потеряться" до шифра);
 //   (9)+(10) позиционная — эталонные точки queens_park/embervud: экранный пиксель из
 //       normToLatLng(координаты из data/v2/markers.json) должен совпасть с фактическим
 //       DOM-центром маркера (допуск 2px) на зумах [2,5], плюс скриншоты для визуальной
@@ -15,6 +23,7 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
+const DKCrypto = require('../js/gm-crypto.js');
 
 const ROOT = path.join(__dirname, '..');
 const EPS_INVERT = 1e-12;
@@ -24,8 +33,23 @@ function inverse([x, y]) { return [y, 1 - x]; }
 
 function readJSON(p) { return JSON.parse(fs.readFileSync(p, 'utf8')); }
 
+function isNonEmptyBase64(s) {
+  if (typeof s !== 'string' || !s) return false;
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(s)) return false;
+  try { return Buffer.from(s, 'base64').length > 0; } catch (e) { return false; }
+}
+
+// Легаси (без "v") и текущий v2 (v:2) — оба валидные представления (см. js/gm-crypto.js
+// isEnc/isLegacyBlock). Держим это как структурный инвариант, который переживает
+// scripts/rotate-passphrase.mjs без правок теста: до ротации блоки легаси, после — v2.
+function isValidEncBlockShape(block) {
+  if (!DKCrypto.isEnc(block)) return false;
+  if ('v' in block && block.v !== 2) return false;
+  return isNonEmptyBase64(block.salt) && isNonEmptyBase64(block.iv) && isNonEmptyBase64(block.ct);
+}
+
 test.describe('golden (Ф3.4): математика миграции', () => {
-  test('8) v2 файлы инвертируются в v1, штамп на месте, gmText побайтово идентичен', () => {
+  test('8а) v2-геометрия зон/маркеров инвертируется обратно в v1, штамп на месте', () => {
     const zonesV1 = readJSON(path.join(ROOT, 'data', 'zones.json'));
     const markersV1 = readJSON(path.join(ROOT, 'data', 'markers.json'));
     const zonesV2Doc = readJSON(path.join(ROOT, 'data', 'v2', 'zones.json'));
@@ -45,7 +69,6 @@ test.describe('golden (Ф3.4): математика миграции', () => {
     for (const z2 of zonesV2Doc.items) {
       const z1 = zonesV1ById[z2.id];
       expect(z1, `zone ${z2.id}: нет пары в v1`).toBeTruthy();
-      expect(JSON.stringify(z2.gmText), `zone ${z2.id}: gmText изменился`).toBe(JSON.stringify(z1.gmText));
       expect(z2.polygon.length, `zone ${z2.id}: число вершин изменилось`).toBe(z1.polygon.length);
       z2.polygon.forEach((pt, i) => {
         const back = inverse(pt);
@@ -58,11 +81,64 @@ test.describe('golden (Ф3.4): математика миграции', () => {
     for (const m2 of markersV2Doc.items) {
       const m1 = markersV1ById[m2.id];
       expect(m1, `marker ${m2.id}: нет пары в v1`).toBeTruthy();
-      expect(JSON.stringify(m2.gmText), `marker ${m2.id}: gmText изменился`).toBe(JSON.stringify(m1.gmText));
       const back = inverse([m2.x, m2.y]);
       expect(Math.abs(back[0] - m1.x), `marker ${m2.id} x`).toBeLessThanOrEqual(EPS_INVERT);
       expect(Math.abs(back[1] - m1.y), `marker ${m2.id} y`).toBeLessThanOrEqual(EPS_INVERT);
     }
+  });
+
+  test('8б) enc-блоки data/v2 валидны (легаси или v2) и 1:1 совпадают с v1 по каждому id', () => {
+    const zonesV1 = readJSON(path.join(ROOT, 'data', 'zones.json'));
+    const markersV1 = readJSON(path.join(ROOT, 'data', 'markers.json'));
+    const zonesV2 = readJSON(path.join(ROOT, 'data', 'v2', 'zones.json')).items;
+    const markersV2 = readJSON(path.join(ROOT, 'data', 'v2', 'markers.json')).items;
+
+    function checkPair(v1ById, v2items, label) {
+      let v1EncCount = 0, v2EncCount = 0;
+      for (const it2 of v2items) {
+        const it1 = v1ById[it2.id];
+        expect(it1, `${label} ${it2.id}: нет пары в v1`).toBeTruthy();
+        const encV1 = DKCrypto.isEnc(it1.gmText);
+        const encV2 = DKCrypto.isEnc(it2.gmText);
+        expect(encV2, `${label} ${it2.id}: зашифрован в v1=${encV1}, но в v2=${encV2}`).toBe(encV1);
+        if (encV2) {
+          expect(isValidEncBlockShape(it2.gmText), `${label} ${it2.id}: невалидная форма enc-блока в v2`).toBe(true);
+        }
+        if (encV1) v1EncCount++;
+        if (encV2) v2EncCount++;
+      }
+      expect(v2EncCount, `${label}: итоговое число enc-блоков в v2 разошлось с v1`).toBe(v1EncCount);
+      return v2EncCount;
+    }
+
+    const zoneEnc = checkPair(Object.fromEntries(zonesV1.map((z) => [z.id, z])), zonesV2, 'zone');
+    const markerEnc = checkPair(Object.fromEntries(markersV1.map((m) => [m.id, m])), markersV2, 'marker');
+    expect(zoneEnc + markerEnc, 'итого enc-блоков в data/v2').toBeGreaterThan(0);
+  });
+
+  test('8в) в data/v2 нет ни одного плейнтекст-поля gmText', () => {
+    const zonesV2 = readJSON(path.join(ROOT, 'data', 'v2', 'zones.json')).items;
+    const markersV2 = readJSON(path.join(ROOT, 'data', 'v2', 'markers.json')).items;
+
+    for (const it of [...zonesV2, ...markersV2]) {
+      const gm = it.gmText;
+      const ok = gm === '' || isValidEncBlockShape(gm);
+      expect(ok, `${it.id}: gmText не пустая строка и не валидный enc-блок — похоже на утечку плейнтекста`).toBe(true);
+    }
+  });
+
+  // 8г — строгий пост-ротационный гейт, ОТДЕЛЬНЫЙ от 8б (универсального, легаси-или-v2)
+  // инварианта. 8б держит переходное состояние (до/после rotate --upgrade), это тест
+  // держит целевое: после апгрейда легаси-блок в data/v2 — регрессия, а не норма.
+  test('8г) пост-ротация: все enc-блоки data/v2 несут v:2 — легаси-блок = регрессия', () => {
+    const zonesV2 = readJSON(path.join(ROOT, 'data', 'v2', 'zones.json')).items;
+    const markersV2 = readJSON(path.join(ROOT, 'data', 'v2', 'markers.json')).items;
+
+    const legacy = [];
+    for (const it of [...zonesV2, ...markersV2]) {
+      if (DKCrypto.isLegacyBlock(it.gmText)) legacy.push(it.id);
+    }
+    expect(legacy, `легаси-блоки в data/v2 (запусти scripts/rotate-passphrase.mjs --upgrade): ${legacy.join(', ')}`).toHaveLength(0);
   });
 });
 

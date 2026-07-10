@@ -12,9 +12,10 @@
       "playerText": "Лесная деревня-база к югу от руин. Здесь — длинный отдых, припасы и доска контрактов: отсюда уходят и сюда возвращаются вылазки.",
       "gmText": {
         "enc": true,
-        "salt": "gC0znyOZLHFopPe/+jWbkA==",
-        "iv": "4/sUjCwLfahtOx8b",
-        "ct": "Agk8bpvSwS/VMU1ZjpcExxvJUEntYwe7S/9OUIIeTv5KlR8ZKQNouJo7WT0WkYNhqd5kD3nS2ISLICiZsjKb6PcikI7qeFnJH5D5ar5/NfrrrcGR3c14thO6zkhQAdNzvX+D2vA8PFxGOhcjjUjHfCm1B7mqRcOS9bMWlwG05hmm7BbnfHH2jOpjb6xKfe2rObXCbJKaEy000Z0GA/vOUyfdqmIh+GTZmyPbJHQneRfsaqiopc4QFQe/aYIVtbckad1lZzuTlD7WlbRoFgk+"
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "5UvoKHYC8M5NKThL",
+        "ct": "YIRPnjuSEZWZwIuPR8JBMueUtBsaGpDzNQ0O3x89fiCFlqQo3UCIyiB3dM35O332Wy7IxX6aLhlrKkVoIIzkoM7G/NY6rtkH5O8DC02TxEg8Hjt477wfLoEg11HwI0F1etYpVKheo+AkzCFg4l+8yMxY9kGidjE3T3aRyORp/1b3Vu1971Z1sT/+llqsfIwtgzqqDDCElFEjfgyByFcsQvM05bhsXV2b8weYpKA1ix1TZt5qTi+OnzI1YcSYzMfSZKKu+vyrsMqoa2GSgOMC"
       },
       "x": 0.92,
       "y": 0.93
@@ -29,9 +30,10 @@
       "playerText": "Парковые сады в сердце города, затопленные глубокой Дымкой. Воздух мерцает, листва и статуи изменены контаминацией — здесь не дышат полной грудью и не задерживаются.",
       "gmText": {
         "enc": true,
-        "salt": "gC0znyOZLHFopPe/+jWbkA==",
-        "iv": "BJcSoALuQcIV4kS0",
-        "ct": "ysjX7lq1rUefYXTRLBUF/bydSyT6Xi+ILKotfDHp7Or98OCGZKGQ04oN7yg0Iz6CZsyIGiD0t6HWNkG/8NxM3DS+PHAN9i8SzsDvJfdFHfAQWg2PBl269F6QQO6wvDCfj6c/jXB1FuN2RfVeHu0ugPAXULWF01SEQt3invo2DvMUasqhnpH2p0+uReV86Vf+Gbxuo0hn"
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "Q7+Ypm8oBLeNf1k3",
+        "ct": "QNHqooRM8KHMthyldIkheKjz0wa+7/GzU8BG1TrActuy67S17wNgbeMzZgHB8dOIcgFrQ9eZkiApCfI/JrhhVARWc5GwI033Wqgy+CypascGCEuZlue78jtk5p/4g07SwNmQnUq2c2GEVM2hWaLhRqvvRO3pwkUIUMn0eCm3Ndbe6Qba56rCaqQ4qL7R0UL2j48dVZs6"
       },
       "x": 0.43999999999999995,
       "y": 0.3
