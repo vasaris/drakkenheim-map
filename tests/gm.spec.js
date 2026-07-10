@@ -106,25 +106,35 @@ test.describe('E2E: GM-слой (Ф3.5а gm-engine.js)', () => {
     await expect(page.locator('#masterModal')).not.toHaveClass(/show/);
   });
 
-  test('b) верный пароль (фикстура) — gmText виден в панели', async ({ page }) => {
+  test('b) верный пароль (фикстура) — gmText виден и редактируем в форме редактора', async ({ page }) => {
+    // Ф3.5б: read-панель Ф3.5а (renderPanel/itemBlock) удалена — её заменяет форма
+    // редактора (js/editor-engine.js), показывающая playerText+gmText при выборе
+    // объекта на карте. #side остаётся тем же элементом, assertPanelVisiblyOpen всё ещё
+    // релевантен (это по-прежнему тот самый бывший баг #2 — только контент другой).
     await page.goto('/?engine=leaflet&gmfixture=1', { waitUntil: 'load' });
-    await page.waitForFunction(() => !!window.DKGM);
+    await page.waitForFunction(() => !!window.DKGM && !!window.DKEditor);
 
     await page.click('#masterBtn');
     await assertModalVisiblyOpen(page);
     await page.fill('#masterPw', FIXTURE_PW);
     await page.click('#masterOk');
 
-    // модалка закрылась, разлочено
     await expect(page.locator('#masterModal')).not.toHaveClass(/show/);
     await page.waitForFunction(() => window.DKGM.isUnlocked());
 
     await expect(page.locator('#side')).not.toHaveClass(/hidden/);
-    await assertPanelVisiblyOpen(page); // баг #2: DOM-класс снят, но реально панель была под картой
-    await expect(page.locator('#side')).toContainText('Фикстурная зона');
-    await expect(page.locator('#side')).toContainText('GM-фикстура: тайна зоны для e2e');
-    await expect(page.locator('#side')).toContainText('Фикстурный маркер');
-    await expect(page.locator('#side')).toContainText('GM-фикстура: тайна маркера для e2e');
+    await assertPanelVisiblyOpen(page);
+
+    await page.waitForSelector('.dk-editor-zone');
+    await page.click('.dk-editor-zone');
+    await page.waitForSelector('#z_gtext:not([disabled])');
+    await expect(page.locator('#z_ptext')).toHaveValue('Игрокам: фикстурный текст зоны.');
+    await expect(page.locator('#z_gtext')).toHaveValue('GM-фикстура: тайна зоны для e2e');
+
+    await page.click('.dk-marker[data-marker-id="fx_marker_1"]');
+    await page.waitForSelector('#m_gtext:not([disabled])');
+    await expect(page.locator('#m_ptext')).toHaveValue('Игрокам: фикстурный текст маркера.');
+    await expect(page.locator('#m_gtext')).toHaveValue('GM-фикстура: тайна маркера для e2e');
 
     const zonePlain = await page.evaluate(() => window.DKGM.getPlain('zone', 'fx_zone_1'));
     expect(zonePlain).toBe('GM-фикстура: тайна зоны для e2e');
@@ -138,7 +148,7 @@ test.describe('E2E: GM-слой (Ф3.5а gm-engine.js)', () => {
 
   test('c) Фикс (а): 0 enc-блоков — явный флоу "задать пароль", не тихий unlock', async ({ page }) => {
     await page.goto('/?engine=leaflet&gmfixture=empty', { waitUntil: 'load' });
-    await page.waitForFunction(() => !!window.DKGM);
+    await page.waitForFunction(() => !!window.DKGM && !!window.DKEditor);
 
     await page.click('#masterBtn');
     await expect(page.locator('#masterTitle')).toHaveText(/Задать пароль мастера/);
@@ -160,22 +170,25 @@ test.describe('E2E: GM-слой (Ф3.5а gm-engine.js)', () => {
     await page.waitForFunction(() => window.DKGM.isUnlocked());
     unlocked = await page.evaluate(() => window.DKGM.isUnlocked());
     expect(unlocked).toBe(true);
-    // в пустом мире нет секретов — панель показывает плейсхолдер, а не текст
-    await expect(page.locator('#side')).toContainText('— пусто —');
+    // в пустом мире нет секретов — выбранный объект показывает пустое GM-поле (не placeholder,
+    // а именно пустую расшифровку — нечего было шифровать)
+    await page.waitForSelector('.dk-editor-zone');
+    await page.click('.dk-editor-zone');
+    await page.waitForSelector('#z_gtext:not([disabled])');
+    await expect(page.locator('#z_gtext')).toHaveValue('');
   });
 
-  test('d) требование 2: попап маркера получает GM-блок после разлочки, реально видимый', async ({ page }) => {
-    // markers-engine.js рендерит РЕАЛЬНЫЕ маркеры (data/v2/markers.json) независимо от
-    // ?gmfixture (только gm-engine.js читает фикстуру) — поэтому кликаем по реальному id
-    // ('embervud'), а разлочку берём через пустую фикстуру (0 enc-блоков, безопасный
-    // тестовый пароль), чтобы не трогать боевой пароль. Полнота содержимого gmText уже
-    // покрыта тестом (b) (та же window.DKGM.getPlain, что использует и попап) — здесь
-    // проверяем именно механику попапа: блок появляется/пропадает и реально виден.
+  test('d) попап маркера в виде игрока: только playerText, без GM — до разлочки', async ({ page }) => {
+    // Ф3.5б-консеквенция: пока GM разлочен, редактор ЗАМЕНЯЕТ read-слой маркеров своим
+    // (DKMarkers.setEnabled(false)) — читаемый попап с GM-блоком (Ф3.5а фикс #2) поэтому
+    // становится недостижим на время авторского режима: GM видит и правит gmText через
+    // форму редактора (см. тест b), а не через попап. Этот тест держит то, что ДЕЙСТВИТЕЛЬНО
+    // осталось инвариантом: до разлочки попап игрока никогда не содержит GM-блок, и после
+    // разлочки read-слой (с его попапами) не видим на карте вовсе — его место занял редактор.
     await page.goto('/?engine=leaflet&gmfixture=empty', { waitUntil: 'load' });
-    await page.waitForFunction(() => !!window.DKGM);
+    await page.waitForFunction(() => !!window.DKGM && !!window.DKEditor);
     await page.waitForSelector('.dk-marker[data-marker-id="embervud"]');
 
-    // до разлочки — попап только с playerText, GM-блока нет вовсе
     await page.click('.dk-marker[data-marker-id="embervud"]');
     await expect(page.locator('.leaflet-popup-content')).toBeVisible();
     await expect(page.locator('.dk-marker-pop-gm')).toHaveCount(0);
@@ -186,17 +199,9 @@ test.describe('E2E: GM-слой (Ф3.5а gm-engine.js)', () => {
     await page.fill('#masterPwConfirm', 'diag-only-not-real-pw');
     await page.click('#masterOk');
     await page.waitForFunction(() => window.DKGM.isUnlocked());
+    await page.waitForTimeout(150);
 
-    // после разлочки — попап пересобирается заново (bindPopup(fn)) и несёт GM-блок,
-    // визуально отличимый от playerText (см. .dk-marker-pop-gm в css/style.css), и он
-    // реально виден (toBeVisible), не просто присутствует в DOM
-    await page.click('.dk-marker[data-marker-id="embervud"]');
-    await expect(page.locator('.leaflet-popup-content')).toBeVisible();
-    const gmBlock = page.locator('.dk-marker-pop-gm');
-    await expect(gmBlock).toBeVisible();
-    await expect(gmBlock.locator('label')).toHaveText('GM');
-    const gmBox = await gmBlock.boundingBox();
-    expect(gmBox.width, '.dk-marker-pop-gm width > 0').toBeGreaterThan(0);
-    expect(gmBox.height, '.dk-marker-pop-gm height > 0').toBeGreaterThan(0);
+    // read-слой (и его попапы) скрыт — редактор занял карту своим слоем
+    await expect(page.locator('.dk-marker[data-marker-id="embervud"]')).toHaveCount(0);
   });
 });

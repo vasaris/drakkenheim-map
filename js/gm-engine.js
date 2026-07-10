@@ -1,15 +1,17 @@
-// Ф3.5а: GM-слой (чтение) для Leaflet-движка (?engine=leaflet). Расшифровывает gmText
-// зон/маркеров паролем мастера — ключ и открытый текст живут ТОЛЬКО в памяти вкладки
-// (в этом замыкании), никогда не пишутся в localStorage/IndexedDB/консоль. Только эта
-// ветка бутстрапа — app.js (v1, редактор + свой GM-слой) не трогается.
+// Ф3.5а: GM-слой (разлочка) для Leaflet-движка (?engine=leaflet). Расшифровывает gmText
+// зон/маркеров паролем мастера — ключ живёт ТОЛЬКО в памяти вкладки (в этом замыкании),
+// никогда не пишется в localStorage/IndexedDB/консоль. Только эта ветка бутстрапа —
+// app.js (v1, редактор + свой GM-слой) не трогается.
 //
 // UI переиспользует разметку #masterBtn/#masterModal из index.html (общая с v1, но v1 её
-// не грузит на ветке ?engine=leaflet — конфликта обработчиков нет) и #side (аналогично,
-// v1 использует его только в EDIT-режиме, которого здесь не бывает).
+// не грузит на ветке ?engine=leaflet — конфликта обработчиков нет).
 //
-// Панель (а не попапы поверх карты) — зоны в Leaflet-движке пока не кликабельны (только
-// вырезы тумана в fog-engine.js), так что единый читаемый список зон+маркеров рядом с
-// playerText проще и не требует трогать fog-engine.js/markers-engine.js.
+// Ф3.5б: read-панель в #side (renderPanel/itemBlock) УДАЛЕНА — её заменяет форма
+// редактора в js/editor-engine.js (показывает playerText+gmText при выборе объекта И
+// даёт их редактировать; отдельный список-дублёр не нужен). gm-engine.js теперь только
+// разлочивает и отдаёт сессионный ключ через window.DKGM.getKeyAndSalt() +
+// подписку window.DKGM.onChange(cb) — кто угодно (editor-engine.js) реагирует на
+// unlock/lock, не опрашивая gmKey напрямую (он приватный).
 (function () {
   var DK = window.DKMapEngine;
   var DKCrypto = window.DKCrypto;
@@ -19,23 +21,33 @@
   var $ = function (s) { return document.querySelector(s); };
 
   // ?gmfixture=1 -> tests/fixtures/gm-fixture-*.json (enc-блоки на тестовом пароле);
-  // ?gmfixture=empty -> tests/fixtures/gm-empty-*.json (0 enc-блоков, флоу "задать пароль").
+  // ?gmfixture=empty -> tests/fixtures/gm-empty-*.json (0 enc-блоков, флоу "задать пароль");
+  // ?gmfixture=lifecycle -> tests/fixtures/lifecycle-*.json (клон РЕАЛЬНОЙ геометрии/имён
+  // data/v2 — 9 зон + 2 маркера, но gmText целиком перешифрован фикстурным паролем при
+  // генерации фикстуры — боевой шифртекст туда не попадает; см. tests/editor.spec.js
+  // сценарий 13, сквозной жизненный цикл на реалистичном объёме данных).
   // Без параметра — боевые data/v2/*.json. См. tests/gm.spec.js.
   var Q = new URLSearchParams(location.search);
   var fx = Q.get('gmfixture');
   var ZONES_URL = fx === 'empty' ? 'tests/fixtures/gm-empty-zones.json'
+    : fx === 'lifecycle' ? 'tests/fixtures/lifecycle-zones.json'
     : fx ? 'tests/fixtures/gm-fixture-zones.json'
     : 'data/v2/zones.json';
   var MARKERS_URL = fx === 'empty' ? 'tests/fixtures/gm-empty-markers.json'
+    : fx === 'lifecycle' ? 'tests/fixtures/lifecycle-markers.json'
     : fx ? 'tests/fixtures/gm-fixture-markers.json'
     : 'data/v2/markers.json';
 
   var zones = [], markers = [];
   var gmKey = null, gmSalt = null;
-  var gmPlain = {}; // "z:"+id / "m:"+id -> расшифрованный текст, только в памяти
+  var gmPlain = {}; // "z:"+id / "m:"+id -> расшифрованный текст, только в памяти (читает markers-engine.js попап)
+  var changeListeners = []; // подписчики window.DKGM.onChange — editor-engine.js реагирует на unlock/lock
 
-  function esc(s) {
-    return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  function notifyChange() {
+    var unlocked = !!gmKey;
+    changeListeners.forEach(function (cb) {
+      try { cb(unlocked); } catch (e) { console.error('gm-engine: onChange-подписчик упал', e); }
+    });
   }
 
   function encBlocks() {
@@ -103,37 +115,6 @@
     for (var k in gmPlain) delete gmPlain[k];
   }
 
-  /* ---------- GM-панель (читает #side; заполняется только когда gmKey установлен) ---------- */
-  function itemBlock(obj, prefix, titleField) {
-    var title = obj[titleField] || obj.name || obj.id;
-    var legacy = DKCrypto.isLegacyBlock(obj.gmText);
-    var text = gmPlain[prefix + obj.id];
-    var gmHtml = '<p class="gmnote">' + (text ? esc(text) : '<span class="muted">— пусто —</span>') + '</p>' +
-      (legacy ? '<div class="gmlegacy muted">устаревший формат (без AAD) — см. консоль</div>' : '');
-    return '<div class="gmitem">' +
-      '<h4>' + esc(title) + '</h4>' +
-      '<label>Игрокам</label><p>' + (obj.playerText ? esc(obj.playerText) : '<span class="muted">—</span>') + '</p>' +
-      '<label>GM</label>' + gmHtml +
-      '</div>';
-  }
-
-  function renderPanel() {
-    var side = $('#side');
-    if (!side) return;
-    if (!gmKey) { side.classList.add('hidden'); side.innerHTML = ''; return; }
-    side.classList.remove('hidden');
-    var html = '<div class="sec"><h3>GM-слой</h3>' +
-      '<div class="gmbar on">🔓 расшифровано на эту сессию <button class="btn" id="gmPanelLock">Запереть</button></div>' +
-      '</div>';
-    html += '<div class="sec"><h3>Зоны (' + zones.length + ')</h3>' +
-      zones.map(function (z) { return itemBlock(z, 'z:', 'name'); }).join('') + '</div>';
-    html += '<div class="sec"><h3>Маркеры (' + markers.length + ')</h3>' +
-      markers.map(function (m) { return itemBlock(m, 'm:', 'visibleName'); }).join('') + '</div>';
-    side.innerHTML = html;
-    var lb = $('#gmPanelLock');
-    if (lb) lb.onclick = function () { lockGM(); setMasterBtn(); renderPanel(); toast('GM-слой заперт'); };
-  }
-
   /* ---------- toast (переиспользует #toast из index.html) ---------- */
   var toastT = null;
   function toast(msg) {
@@ -187,12 +168,12 @@
       if (p1 !== p2) { errEl.textContent = 'Пароли не совпадают.'; return; }
       var okSet = await setupNewMaster(p1);
       if (!okSet) { errEl.textContent = 'Не удалось задать пароль.'; return; }
-      closeModal(); setMasterBtn(); renderPanel();
+      closeModal(); setMasterBtn(); notifyChange();
       toast('Пароль мастера задан для этой сессии');
     } else {
       var okUnlock = await unlockGM(pwEl.value);
       if (!okUnlock) { errEl.textContent = 'Неверный пароль мастера.'; return; }
-      closeModal(); setMasterBtn(); renderPanel();
+      closeModal(); setMasterBtn(); notifyChange();
       toast('GM-слой расшифрован');
     }
   }
@@ -208,7 +189,7 @@
     }
     setMasterBtn();
     masterBtn.addEventListener('click', function () {
-      if (gmKey) { lockGM(); setMasterBtn(); renderPanel(); toast('GM-слой заперт'); return; }
+      if (gmKey) { lockGM(); setMasterBtn(); notifyChange(); toast('GM-слой заперт'); return; }
       openModal();
     });
     cancelBtn.addEventListener('click', closeModal);
@@ -238,9 +219,14 @@
     console.error('gm-engine: не удалось загрузить данные', err);
   });
 
-  // Экспорт для тестов (tests/gm.spec.js читает состояние через window.DKGM, не хардкодит id/тексты).
+  // Публичный интерфейс. isUnlocked/getPlain — читают markers-engine.js (попап) и тесты
+  // (не хардкодят id/тексты). getKeyAndSalt/onChange — Ф3.5б: js/editor-engine.js шифрует
+  // gmText тем же сессионным ключом при сохранении и включает/выключает свои инструменты
+  // по факту unlock/lock, не опрашивая приватный gmKey напрямую.
   window.DKGM = {
     isUnlocked: function () { return !!gmKey; },
     getPlain: function (kind, id) { return gmPlain[(kind === 'zone' ? 'z:' : 'm:') + id]; },
+    getKeyAndSalt: function () { return gmKey ? { key: gmKey, salt: gmSalt } : null; },
+    onChange: function (cb) { changeListeners.push(cb); },
   };
 })();

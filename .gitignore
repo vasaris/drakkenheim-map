@@ -21,3 +21,9 @@ artifacts/
 
 # Ф3.5а: pre-rotation backups from scripts/rotate-passphrase.mjs — local safety net only
 data/v2/*.bak
+
+# Ф3.5б: lifecycle e2e fixture — generated fresh from data/v2 by tests/global-setup.js
+# before every test run (fixture password only); committing a snapshot is exactly the
+# staleness bug this replaced (screenshot/test not reflecting a data edit)
+tests/fixtures/lifecycle-zones.json
+tests/fixtures/lifecycle-markers.json

@@ -115,33 +115,31 @@
     css.href = 'js/vendor/leaflet/leaflet.css';
     document.head.appendChild(css);
 
-    var leaflet = document.createElement('script');
-    leaflet.src = 'js/vendor/leaflet/leaflet.js';
-    leaflet.onload = function () {
-      // gm-crypto.js — до map-engine.js: не зависит от него, но gm-engine.js нужны оба.
-      var gmcrypto = document.createElement('script');
-      gmcrypto.src = 'js/gm-crypto.js';
-      gmcrypto.onload = function () {
-        var engine = document.createElement('script');
-        engine.src = 'js/map-engine.js';
-        engine.onload = function () {
-          var fog = document.createElement('script');
-          fog.src = 'js/fog-engine.js';
-          document.body.appendChild(fog);
-
-          var markers = document.createElement('script');
-          markers.src = 'js/markers-engine.js';
-          document.body.appendChild(markers);
-
-          var gm = document.createElement('script');
-          gm.src = 'js/gm-engine.js';
-          document.body.appendChild(gm);
-        };
-        document.body.appendChild(engine);
-      };
-      document.body.appendChild(gmcrypto);
-    };
-    document.body.appendChild(leaflet);
+    // Ф3.5б: строго последовательная цепочка (не параллельная) — js/editor-engine.js
+    // опирается на window.DKMapEngine/DKCrypto/DKFog/DKMarkers/DKGM все разом, так что
+    // порядок должен быть гарантирован, а не зависеть от того, кто из fog/markers/gm-engine
+    // догрузится первым. Каждый скрипт синхронно выставляет свой window.DK* до конца
+    // выполнения (даже если сам ещё тянет свой fetch данных) — следующему в цепочке
+    // этого достаточно.
+    function loadScript(src, next) {
+      var s = document.createElement('script');
+      s.src = src;
+      s.onload = next;
+      document.body.appendChild(s);
+    }
+    loadScript('js/vendor/leaflet/leaflet.js', function () {
+      loadScript('js/gm-crypto.js', function () {
+        loadScript('js/map-engine.js', function () {
+          loadScript('js/fog-engine.js', function () {
+            loadScript('js/markers-engine.js', function () {
+              loadScript('js/gm-engine.js', function () {
+                loadScript('js/editor-engine.js', function () {});
+              });
+            });
+          });
+        });
+      });
+    });
   } else {
     var app = document.createElement('script');
     app.src = 'js/app.js';

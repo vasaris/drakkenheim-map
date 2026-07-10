@@ -154,3 +154,31 @@ svg.canvas{display:block;}
 .dk-marker-pop-gm label{display:block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
   color:var(--gold);margin-bottom:3px;}
 .dk-marker-pop-gm p{color:#ddd6c7;}
+.dk-marker.sel .dk-marker-dot{box-shadow:0 0 0 3px var(--gold);}
+
+/* Ф3.5б: авторский слой (js/editor-engine.js) — подписи зон/маркеров через L.Tooltip
+   (permanent), а не свой div-icon (решение по спорному 7 — Leaflet сам пересчитывает
+   позицию на zoom/pan). Убираем стандартный фон/рамку/тень Leaflet-тултипа (js/vendor/
+   leaflet/leaflet.css .leaflet-tooltip), оставляем только текст с тонкой тёмной обводкой —
+   как .zlabel/.mlabel v1 (там — paint-order:stroke в SVG; тут — -webkit-text-stroke,
+   тултип это HTML, не SVG-текст).
+   Живой баг: селектор ОДНОГО класса (.dk-editor-zlabel) имеет ту же специфичность, что
+   .leaflet-tooltip — leaflet.css подключается ПОЗЖЕ style.css (динамически, в цепочке
+   бутстрапа index.html), поэтому при равной специфичности его правила побеждают по
+   порядку в каскаде: белая плашка/чёрный текст/тень остаются, override не срабатывает.
+   Фикс — составной селектор (оба класса на одном тултипе, Leaflet сам их так и ставит):
+   специфичность выше, побеждает независимо от порядка подключения стилей. */
+.leaflet-tooltip.dk-editor-zlabel,.leaflet-tooltip.dk-editor-mlabel{
+  background:none;border:none;box-shadow:none;padding:0;margin:0;
+  font-family:"PT Sans",sans-serif;pointer-events:none;}
+.leaflet-tooltip.dk-editor-zlabel::before,.leaflet-tooltip.dk-editor-mlabel::before{display:none;}
+.leaflet-tooltip.dk-editor-zlabel{color:var(--ink);font-weight:700;
+  font-size:var(--dk-editor-zlabel-size,11px);
+  -webkit-text-stroke:2.5px #0b0a10;paint-order:stroke fill;text-shadow:0 0 2px #0b0a10;}
+.leaflet-tooltip.dk-editor-mlabel{color:#efe9dd;font-weight:600;font-size:11px;
+  -webkit-text-stroke:2px #0b0a10;paint-order:stroke fill;text-shadow:0 0 2px #0b0a10;}
+
+/* Конфликт с репо (баннер в панели редактора) — .gmlock с акцентом в цвет "scouted"
+   (единственный "предупреждающий" тон в существующей палитре, нового токена не заводим) */
+.conflict-banner{border-color:var(--s-scouted);color:var(--ink);}
+.conflict-banner .btnrow{margin-top:8px;}

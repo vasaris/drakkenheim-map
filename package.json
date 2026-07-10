@@ -6,7 +6,8 @@
     "test": "playwright test tests/correctness.spec.js",
     "test:perf": "playwright test tests/perf.spec.js",
     "test:gm": "playwright test tests/gm.spec.js",
-    "test:gm-unit": "node --test tests/gm-crypto.spec.mjs"
+    "test:gm-unit": "node --test tests/gm-crypto.spec.mjs",
+    "test:editor": "playwright test tests/editor.spec.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.47.0"

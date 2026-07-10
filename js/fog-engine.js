@@ -72,6 +72,30 @@
 
   L.svgOverlay(svg, DK.bounds, {interactive: false, pane: 'overlayPane'}).addTo(DK.map);
 
+  // Ф3.5б: живой хук для js/editor-engine.js — статус зоны должен «немедленно отражаться
+  // в тумане» (решение по спорному 2: Дымка остаётся видимой и во время редактирования,
+  // в отличие от v1, который её на время EDIT гасит целиком). Не переоткрывает исходный
+  // fetch — правит уже существующий DOM-узел maskG напрямую (та же техника, что и
+  // app.js renderFog: querySelector по data-zone, замена fill/points на месте).
+  // syncZone — upsert (создаёт вырез, если зона новая; иначе обновляет форму/цвет).
+  window.DKFog = {
+    syncZone: function (zone) {
+      if (!zone || !zone.polygon || zone.polygon.length < 3) return;
+      var pts = zone.polygon.map(function (p) { return normPointToSvg(p[0], p[1]); }).join(' ');
+      var node = maskG.querySelector('.leaf-hazezone[data-zone="' + zone.id + '"]');
+      if (!node) {
+        node = el('polygon', { 'class': 'leaf-hazezone', 'data-zone': zone.id });
+        maskG.appendChild(node);
+      }
+      node.setAttribute('points', pts);
+      node.setAttribute('fill', FOG_HEX[zone.status] || FOG_HEX.hidden);
+    },
+    removeZone: function (id) {
+      var node = maskG.querySelector('.leaf-hazezone[data-zone="' + id + '"]');
+      if (node) node.remove();
+    },
+  };
+
   var Q = new URLSearchParams(location.search);
 
   // Ф3.4: реальные зоны из data/v2/zones.json (мигрированные книжные координаты).

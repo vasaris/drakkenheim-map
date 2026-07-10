@@ -4,8 +4,8 @@
   "items": [
     {
       "id": "embervud",
-      "name": "Эмбервуд — хаб West Marches",
-      "visibleName": "→ Эмбервуд, 5 миль на юг",
+      "name": "Эмбервуд",
+      "visibleName": "Эмбервуд",
       "type": "hub",
       "zone": "",
       "status": "known",

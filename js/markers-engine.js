@@ -14,6 +14,20 @@
   var MARKER_COLOR = {location: '#c9a85f', faction: '#5b76b8', danger: '#c5453f', secret: '#b06ae0', hub: '#5fae74'};
   var TYPE_LABEL = {location: 'Локация', faction: 'Фракция', danger: 'Опасность', secret: 'Секрет', hub: 'Хаб'};
 
+  // Ф3.5б: маркеры этого read-слоя (playerText-попапы, скрывает hidden) собраны в
+  // отдельную LayerGroup — js/editor-engine.js прячет её на время авторского режима
+  // (свой слой показывает ВСЕ маркеры кликабельными-для-выбора вместо попапов) и
+  // возвращает при разлочке. window.DKMarkers доступен синхронно (readLayer заведён
+  // сразу), даже если сами маркеры ещё не подгрузились — setEnabled просто no-op на
+  // пустой группе до этого момента.
+  var readLayer = L.layerGroup();
+  window.DKMarkers = {
+    setEnabled: function (enabled) {
+      if (enabled) { if (!DK.map.hasLayer(readLayer)) readLayer.addTo(DK.map); }
+      else { if (DK.map.hasLayer(readLayer)) readLayer.remove(); }
+    },
+  };
+
   function esc(s) {
     return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
@@ -51,6 +65,11 @@
     var zoneById = {};
     zones.forEach(function (z) { zoneById[z.id] = z; });
 
+    // readLayer монтируется на карту ДО создания маркеров: L.Marker.getElement() отдаёт
+    // DOM-узел только после реального рендера, а LayerGroup рендерит своих детей только
+    // когда сама уже на карте — иначе data-marker-id (на нём завязаны тесты) не проставится.
+    readLayer.addTo(DK.map);
+
     var shown = 0;
     markers.forEach(function (m) {
       if (m.status === 'hidden') return;
@@ -64,12 +83,19 @@
         iconAnchor: [8, 8]
       });
 
-      var marker = L.marker(DK.normToLatLng(m.x, m.y), {icon: icon, keyboard: false}).addTo(DK.map);
+      var marker = L.marker(DK.normToLatLng(m.x, m.y), {icon: icon, keyboard: false});
 
       marker.bindPopup(function () { return popupHtml(m); });
 
-      var el = marker.getElement();
-      if (el) el.setAttribute('data-marker-id', m.id);
+      // Ф3.5б: readLayer теперь снимается с карты и возвращается (editor-engine.js
+      // прячет этот слой на время авторского режима) — Leaflet при повторном addTo()
+      // отрисовывает icon заново, и атрибут, выставленный один раз при создании,
+      // терялся бы. Перевешиваем на каждое реальное добавление в DOM, не только на первое.
+      marker.on('add', function () {
+        var el = marker.getElement();
+        if (el) el.setAttribute('data-marker-id', m.id);
+      });
+      marker.addTo(readLayer);
 
       shown++;
     });
