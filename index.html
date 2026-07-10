@@ -105,6 +105,10 @@
   if (params.get('engine') === 'leaflet') {
     document.getElementById('viewport').style.display = 'none';
     document.getElementById('map').style.display = 'block';
+    // Ф3.5а-фикс: "В размер" — v1-only (сбрасывает пан/зум SVG-мира, fitView() из app.js,
+    // который на этой ветке не грузится); Leaflet уже даёт свои +/- контролы. Мёртвая
+    // кнопка без этого — прячем её здесь же, в точке ветвления бутстрапа.
+    document.getElementById('fitBtn').style.display = 'none';
 
     var css = document.createElement('link');
     css.rel = 'stylesheet';

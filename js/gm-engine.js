@@ -143,10 +143,17 @@
   }
 
   /* ---------- модалка мастера (переиспользует #masterBtn/#masterModal из index.html) ---------- */
-  var masterBtn, modal, pwEl, pwConfirmEl, errEl, titleEl, descEl, okBtn, cancelBtn;
+  var masterBtn, modal, pwEl, pwConfirmEl, errEl, titleEl, descEl, okBtn, cancelBtn, modePill;
 
+  // Смежный фикс: modePill — общий с v1 элемент шапки; app.js держит его в синхроне со
+  // своим EDIT-режимом, но на ветке ?engine=leaflet app.js не грузится вовсе, так что без
+  // этого пилюля осталась бы навсегда «Карта кампании», даже после разлочки GM.
   function setMasterBtn() {
     if (masterBtn) masterBtn.textContent = gmKey ? 'Запереть GM' : 'Мастер';
+    if (modePill) {
+      modePill.textContent = gmKey ? 'Режим мастера · GM-слой расшифрован' : 'Карта кампании';
+      modePill.classList.toggle('gm', !!gmKey);
+    }
   }
 
   function openModal() {
@@ -194,7 +201,7 @@
     masterBtn = $('#masterBtn'); modal = $('#masterModal');
     pwEl = $('#masterPw'); pwConfirmEl = $('#masterPwConfirm'); errEl = $('#masterErr');
     titleEl = $('#masterTitle'); descEl = $('#masterDesc');
-    okBtn = $('#masterOk'); cancelBtn = $('#masterCancel');
+    okBtn = $('#masterOk'); cancelBtn = $('#masterCancel'); modePill = $('#modePill');
     if (!masterBtn || !modal || !pwEl || !pwConfirmEl || !errEl || !titleEl || !descEl || !okBtn || !cancelBtn) {
       console.error('gm-engine: не найдены ожидаемые элементы разметки (#masterBtn/#masterModal/...)');
       return;
@@ -208,6 +215,10 @@
     okBtn.addEventListener('click', submitModal);
     [pwEl, pwConfirmEl].forEach(function (el) {
       el.addEventListener('keydown', function (e) { if (e.key === 'Enter') submitModal(); });
+    });
+    // Esc закрывает модалку, только пока она открыта — не мешает другим Esc-хендлерам страницы.
+    window.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal.classList.contains('show')) closeModal();
     });
   }
 
