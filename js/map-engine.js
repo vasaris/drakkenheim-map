@@ -44,4 +44,16 @@
   } else {
     console.log('map-engine: round-trip sanity OK', rt);
   }
+
+  // Экспорт для других модулей ветки ?engine=leaflet (напр. fog-engine.js), чтобы
+  // они не заводили собственных преобразований координат/размеров карты.
+  window.DKMapEngine = {
+    map: map,
+    normToLatLng: normToLatLng,
+    latLngToNorm: latLngToNorm,
+    bounds: bounds,
+    IMG_W: IMG_W,
+    IMG_H: IMG_H,
+    NATIVE_Z: NATIVE_Z
+  };
 })();

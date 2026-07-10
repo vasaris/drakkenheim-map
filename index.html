@@ -115,6 +115,11 @@
     leaflet.onload = function () {
       var engine = document.createElement('script');
       engine.src = 'js/map-engine.js';
+      engine.onload = function () {
+        var fog = document.createElement('script');
+        fog.src = 'js/fog-engine.js';
+        document.body.appendChild(fog);
+      };
       document.body.appendChild(engine);
     };
     document.body.appendChild(leaflet);
