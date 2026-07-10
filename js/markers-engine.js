@@ -14,6 +14,30 @@
   var MARKER_COLOR = {location: '#c9a85f', faction: '#5b76b8', danger: '#c5453f', secret: '#b06ae0', hub: '#5fae74'};
   var TYPE_LABEL = {location: 'Локация', faction: 'Фракция', danger: 'Опасность', secret: 'Секрет', hub: 'Хаб'};
 
+  function esc(s) {
+    return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // Ф3.5а-фикс #2: попап собирается ЗАНОВО при каждом открытии (bindPopup принимает функцию —
+  // см. Leaflet docs), а не один раз при создании маркера — иначе разлочка GM после того, как
+  // маркер уже создан, не отразилась бы в уже забинженной строке. window.DKGM — экспорт
+  // gm-engine.js (грузится параллельно; к моменту клика по маркеру он уже готов).
+  function popupHtml(m) {
+    var title = m.visibleName || m.name || '';
+    var band = TYPE_LABEL[m.type] || '';
+    var html = '<div class="dk-marker-pop">' +
+      (band ? '<div class="dk-marker-pop-band">' + band + '</div>' : '') +
+      '<h3>' + title + '</h3>' +
+      (m.playerText ? '<p>' + m.playerText + '</p>' : '');
+    if (window.DKGM && window.DKGM.isUnlocked()) {
+      var gmText = window.DKGM.getPlain('marker', m.id);
+      html += '<div class="dk-marker-pop-gm"><label>GM</label><p class="gmnote">' +
+        (gmText ? esc(gmText) : '<span class="muted">— пусто —</span>') + '</p></div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
   Promise.all([
     fetch('data/v2/markers.json', {cache: 'no-store'}).then(function (r) {
       return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status));
@@ -42,14 +66,7 @@
 
       var marker = L.marker(DK.normToLatLng(m.x, m.y), {icon: icon, keyboard: false}).addTo(DK.map);
 
-      var title = m.visibleName || m.name || '';
-      var band = TYPE_LABEL[m.type] || '';
-      var popupHtml = '<div class="dk-marker-pop">' +
-        (band ? '<div class="dk-marker-pop-band">' + band + '</div>' : '') +
-        '<h3>' + title + '</h3>' +
-        (m.playerText ? '<p>' + m.playerText + '</p>' : '') +
-        '</div>';
-      marker.bindPopup(popupHtml);
+      marker.bindPopup(function () { return popupHtml(m); });
 
       var el = marker.getElement();
       if (el) el.setAttribute('data-marker-id', m.id);
