@@ -1,15 +1,22 @@
-// Ф3.4/Ф3.5а: золотой тест. Три части:
-//   (8а) геометрическая — миграция v1->v2 инвертируема, штамп на месте (перепроверяется
-//       против РЕАЛЬНЫХ файлов data/v2/*.json, не против результата скрипта в памяти —
-//       ловит расхождение "скрипт написал одно, файл содержит другое");
-//   (8б)+(8в) крипто-инварианты data/v2 (Ф3.5а) — заменяют старый ассерт "gmText
-//       побайтово идентичен v1", который устарел с введением scripts/rotate-passphrase.mjs:
-//       ротация намеренно меняет ct/iv/salt (и легаси-блоки -> v2 при --upgrade), так что
-//       побайтовое совпадение с v1 больше не инвариант. Держит два инварианта, которые
-//       переживают ротацию БЕЗ правок теста: (8б) валидная форма enc-блока (легаси ИЛИ
-//       v2 — см. js/gm-crypto.js isEnc/isLegacyBlock, тот же словарь понятий) и 1:1
-//       соответствие "зашифровано/не зашифровано" с v1 по каждому id; (8в) нет ни одного
-//       плейнтекстового gmText в data/v2 (ни один секрет не мог "потеряться" до шифра);
+// Ф3.4/Ф3.5а/world data (2026): золотой тест. Части:
+//   (8а) структурная — валидная v2-обёртка (schema/mapOrientation), число зон/маркеров
+//       читается из самих данных (НЕ хардкод — состав меняется правками мировых данных,
+//       см. коммит "old town realigned..."), id уникальны, полигоны >=3 вершин, все
+//       координаты (полигоны зон + x/y маркеров) внутри печатного листа [0,1]x[0,1].
+//       ДО world data commit 8а сверял v2-геометрию с замороженным data/zones.json (v1)
+//       через inverse() — это доказывало корректность СКРИПТА миграции Ф3.4 ("скрипт
+//       написал одно, файл содержит другое"). Миграция закрыта, доказательство остаётся
+//       в истории git; data/zones.json — мёртвый снимок, читает его только легаси app.js
+//       (умирает в Ф3.6). Контент теперь живёт и меняется ТОЛЬКО в v2 через редактор
+//       (Ф3.5б) — "v2 навсегда равно замороженному v1" перестал быть инвариантом в
+//       принципе, любая содержательная правка геометрии его ломает. Решение Ивана:
+//       отвязать 8а от data/zones.json явно, не тихим ослаблением теста.
+//   8б (была: 1:1 enc-паритет с v1 по каждому id) — retired вместе с сверкой по той же
+//       причине; её содержательная часть (форма enc-блока) уже покрыта (8в)+(8г) без
+//       всякой зависимости от v1.
+//   (8в) нет ни одного плейнтекстового gmText в data/v2 (ни один секрет не мог
+//       "потеряться" до шифра);
+//   (8г) пост-ротация: все enc-блоки data/v2 несут v:2 — легаси-блок = регрессия.
 //   (9)+(10) позиционная — эталонные точки queens_park/embervud: экранный пиксель из
 //       normToLatLng(координаты из data/v2/markers.json) должен совпасть с фактическим
 //       DOM-центром маркера (допуск 2px) на зумах [2,5], плюс скриншоты для визуальной
@@ -26,12 +33,11 @@ const path = require('path');
 const DKCrypto = require('../js/gm-crypto.js');
 
 const ROOT = path.join(__dirname, '..');
-const EPS_INVERT = 1e-12;
 const GOLDEN_MARKER_IDS = ['queens_park', 'embervud'];
 
-function inverse([x, y]) { return [y, 1 - x]; }
-
 function readJSON(p) { return JSON.parse(fs.readFileSync(p, 'utf8')); }
+
+function inBounds01(n) { return typeof n === 'number' && n >= 0 && n <= 1; }
 
 function isNonEmptyBase64(s) {
   if (typeof s !== 'string' || !s) return false;
@@ -48,10 +54,8 @@ function isValidEncBlockShape(block) {
   return isNonEmptyBase64(block.salt) && isNonEmptyBase64(block.iv) && isNonEmptyBase64(block.ct);
 }
 
-test.describe('golden (Ф3.4): математика миграции', () => {
-  test('8а) v2-геометрия зон/маркеров инвертируется обратно в v1, штамп на месте', () => {
-    const zonesV1 = readJSON(path.join(ROOT, 'data', 'zones.json'));
-    const markersV1 = readJSON(path.join(ROOT, 'data', 'markers.json'));
+test.describe('golden: структурные инварианты data/v2', () => {
+  test('8а) v2-документы валидны: схема/штамп, состав из данных, уникальные id, геометрия в [0,1]', () => {
     const zonesV2Doc = readJSON(path.join(ROOT, 'data', 'v2', 'zones.json'));
     const markersV2Doc = readJSON(path.join(ROOT, 'data', 'v2', 'markers.json'));
 
@@ -60,60 +64,27 @@ test.describe('golden (Ф3.4): математика миграции', () => {
       expect(doc.mapOrientation).toBe('v2');
     }
 
-    expect(zonesV2Doc.items).toHaveLength(9);
-    expect(markersV2Doc.items).toHaveLength(2);
-    expect(zonesV1).toHaveLength(9);
-    expect(markersV1).toHaveLength(2);
+    // Состав — из самих данных, не хардкод: меняется правками мировых данных.
+    expect(zonesV2Doc.items.length).toBeGreaterThan(0);
+    expect(markersV2Doc.items.length).toBeGreaterThan(0);
 
-    const zonesV1ById = Object.fromEntries(zonesV1.map((z) => [z.id, z]));
-    for (const z2 of zonesV2Doc.items) {
-      const z1 = zonesV1ById[z2.id];
-      expect(z1, `zone ${z2.id}: нет пары в v1`).toBeTruthy();
-      expect(z2.polygon.length, `zone ${z2.id}: число вершин изменилось`).toBe(z1.polygon.length);
-      z2.polygon.forEach((pt, i) => {
-        const back = inverse(pt);
-        expect(Math.abs(back[0] - z1.polygon[i][0]), `zone ${z2.id} vertex ${i} x`).toBeLessThanOrEqual(EPS_INVERT);
-        expect(Math.abs(back[1] - z1.polygon[i][1]), `zone ${z2.id} vertex ${i} y`).toBeLessThanOrEqual(EPS_INVERT);
+    const zoneIds = zonesV2Doc.items.map((z) => z.id);
+    expect(new Set(zoneIds).size, 'дублирующийся id зоны').toBe(zoneIds.length);
+    const markerIds = markersV2Doc.items.map((m) => m.id);
+    expect(new Set(markerIds).size, 'дублирующийся id маркера').toBe(markerIds.length);
+
+    for (const z of zonesV2Doc.items) {
+      expect(Array.isArray(z.polygon) && z.polygon.length >= 3, `zone ${z.id}: <3 вершин`).toBe(true);
+      z.polygon.forEach((pt, i) => {
+        expect(inBounds01(pt[0]), `zone ${z.id} vertex ${i} x вне [0,1]`).toBe(true);
+        expect(inBounds01(pt[1]), `zone ${z.id} vertex ${i} y вне [0,1]`).toBe(true);
       });
     }
 
-    const markersV1ById = Object.fromEntries(markersV1.map((m) => [m.id, m]));
-    for (const m2 of markersV2Doc.items) {
-      const m1 = markersV1ById[m2.id];
-      expect(m1, `marker ${m2.id}: нет пары в v1`).toBeTruthy();
-      const back = inverse([m2.x, m2.y]);
-      expect(Math.abs(back[0] - m1.x), `marker ${m2.id} x`).toBeLessThanOrEqual(EPS_INVERT);
-      expect(Math.abs(back[1] - m1.y), `marker ${m2.id} y`).toBeLessThanOrEqual(EPS_INVERT);
+    for (const m of markersV2Doc.items) {
+      expect(inBounds01(m.x), `marker ${m.id} x вне [0,1]`).toBe(true);
+      expect(inBounds01(m.y), `marker ${m.id} y вне [0,1]`).toBe(true);
     }
-  });
-
-  test('8б) enc-блоки data/v2 валидны (легаси или v2) и 1:1 совпадают с v1 по каждому id', () => {
-    const zonesV1 = readJSON(path.join(ROOT, 'data', 'zones.json'));
-    const markersV1 = readJSON(path.join(ROOT, 'data', 'markers.json'));
-    const zonesV2 = readJSON(path.join(ROOT, 'data', 'v2', 'zones.json')).items;
-    const markersV2 = readJSON(path.join(ROOT, 'data', 'v2', 'markers.json')).items;
-
-    function checkPair(v1ById, v2items, label) {
-      let v1EncCount = 0, v2EncCount = 0;
-      for (const it2 of v2items) {
-        const it1 = v1ById[it2.id];
-        expect(it1, `${label} ${it2.id}: нет пары в v1`).toBeTruthy();
-        const encV1 = DKCrypto.isEnc(it1.gmText);
-        const encV2 = DKCrypto.isEnc(it2.gmText);
-        expect(encV2, `${label} ${it2.id}: зашифрован в v1=${encV1}, но в v2=${encV2}`).toBe(encV1);
-        if (encV2) {
-          expect(isValidEncBlockShape(it2.gmText), `${label} ${it2.id}: невалидная форма enc-блока в v2`).toBe(true);
-        }
-        if (encV1) v1EncCount++;
-        if (encV2) v2EncCount++;
-      }
-      expect(v2EncCount, `${label}: итоговое число enc-блоков в v2 разошлось с v1`).toBe(v1EncCount);
-      return v2EncCount;
-    }
-
-    const zoneEnc = checkPair(Object.fromEntries(zonesV1.map((z) => [z.id, z])), zonesV2, 'zone');
-    const markerEnc = checkPair(Object.fromEntries(markersV1.map((m) => [m.id, m])), markersV2, 'marker');
-    expect(zoneEnc + markerEnc, 'итого enc-блоков в data/v2').toBeGreaterThan(0);
   });
 
   test('8в) в data/v2 нет ни одного плейнтекст-поля gmText', () => {

@@ -26,10 +26,10 @@ async function unlockSetup(page, pw) {
 
 // Норм-координата -> экранный пиксель, через тот же DKMapEngine, которым живёт сама
 // карта (см. tests/golden.spec.js тест 9 — тот же приём). Нужен сценарию 13: реальные
-// 9 районов покрывают ВЕСЬ печатный лист карты без зазоров (outskirts — внешнее кольцо,
-// остальные — плитка внутри него), поэтому "свободного" места внутри [0,1] для тестовой
-// зоны просто нет — рисуем её за пределами печатного листа (x>1), в поле, куда карта
-// всё ещё кликабельна (map.setMaxBounds с 10% паддингом, см. js/map-engine.js).
+// районы (outskirts — внешнее кольцо, остальные — плитка внутри него) покрывают ВЕСЬ
+// печатный лист карты без существенных зазоров, поэтому "свободного" места внутри [0,1]
+// для тестовой зоны просто нет — рисуем её за пределами печатного листа (x>1), в поле,
+// куда карта всё ещё кликабельна (map.setMaxBounds с 10% паддингом, см. js/map-engine.js).
 async function normToScreen(page, nx, ny) {
   return page.evaluate(({ nx, ny }) => {
     const DK = window.DKMapEngine;
@@ -351,8 +351,8 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
   // координатах (outskirts — внешнее кольцо, внутри него — другие районы), обычный клик
   // по геометрическому центру ббокса регулярно попадает в чужой (топовый по z) полигон.
   // dispatchEvent бьёт напрямую в DOM-узел по data-zone-id/data-marker-id, минуя hit-test.
-  test('13) сквозной жизненный цикл на клоне боевых данных (9 зон + 2 маркера)', async ({ page }) => {
-    let newZoneId, newMarkerId;
+  test('13) сквозной жизненный цикл на клоне боевых данных (N зон + 2 маркера)', async ({ page }) => {
+    let newZoneId, newMarkerId, baseZones, baseMarkers;
 
     await test.step('unlock (фикстурный пароль на клоне боевой геометрии)', async () => {
       await page.goto('/?engine=leaflet&gmfixture=lifecycle', { waitUntil: 'load' });
@@ -361,17 +361,21 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
       await page.waitForTimeout(150);
     });
 
-    await test.step('9 зон + 2 маркера, с подписями', async () => {
-      expect(await page.evaluate(() => window.DKEditor.getZones().length)).toBe(9);
-      expect(await page.evaluate(() => window.DKEditor.getMarkers().length)).toBe(2);
-      await expect(page.locator('.dk-editor-zlabel')).toHaveCount(9);
-      await expect(page.locator('.dk-editor-mlabel')).toHaveCount(2);
-      await expect(page.locator('#side')).toContainText('Зон: 9 · маркеров: 2');
+    await test.step('N зон + 2 маркера, с подписями', async () => {
+      // Число зон читаем из живых данных, а не хардкодим — lifecycle-фикстура клонирует
+      // ТЕКУЩИЙ data/v2/zones.json (см. tests/global-setup.js), число реальных районов
+      // меняется по мере правки мировых данных (world data commits).
+      baseZones = await page.evaluate(() => window.DKEditor.getZones().length);
+      baseMarkers = await page.evaluate(() => window.DKEditor.getMarkers().length);
+      expect(baseMarkers).toBe(2);
+      await expect(page.locator('.dk-editor-zlabel')).toHaveCount(baseZones);
+      await expect(page.locator('.dk-editor-mlabel')).toHaveCount(baseMarkers);
+      await expect(page.locator('#side')).toContainText(`Зон: ${baseZones} · маркеров: ${baseMarkers}`);
     });
 
     await test.step('нарисовать зону', async () => {
       // за пределами печатного листа (x>1) — единственное гарантированно свободное от
-      // реальных 9 районов место, см. комментарий у normToScreen()
+      // реальных районов место (они тайлят весь лист без зазоров), см. normToScreen()
       const corners = await Promise.all([
         normToScreen(page, 1.02, 0.40), normToScreen(page, 1.06, 0.40),
         normToScreen(page, 1.06, 0.45), normToScreen(page, 1.02, 0.45),
@@ -381,9 +385,9 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
       await page.keyboard.press('Enter');
       await page.waitForTimeout(100);
       const zones = await page.evaluate(() => window.DKEditor.getZones());
-      expect(zones.length).toBe(10);
+      expect(zones.length).toBe(baseZones + 1);
       newZoneId = zones[zones.length - 1].id;
-      await expect(page.locator('#side')).toContainText('Зон: 10 · маркеров: 2');
+      await expect(page.locator('#side')).toContainText(`Зон: ${baseZones + 1} · маркеров: ${baseMarkers}`);
     });
 
     await test.step('статус → вырез в DOM тумана', async () => {
@@ -404,7 +408,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
       await page.mouse.click(center.x, center.y);
       await page.waitForTimeout(100);
       const markers = await page.evaluate(() => window.DKEditor.getMarkers());
-      expect(markers.length).toBe(3);
+      expect(markers.length).toBe(baseMarkers + 1);
       const last = markers[markers.length - 1];
       expect(last.zone).toBe(newZoneId);
       newMarkerId = last.id;
@@ -429,8 +433,8 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
 
       const zones = await page.evaluate(() => window.DKEditor.getZones());
       const markers = await page.evaluate(() => window.DKEditor.getMarkers());
-      expect(zones.length).toBe(10);
-      expect(markers.length).toBe(3);
+      expect(zones.length).toBe(baseZones + 1);
+      expect(markers.length).toBe(baseMarkers + 1);
       expect(zones.find((z) => z.id === newZoneId)).toBeTruthy();
       expect(markers.find((m) => m.id === newMarkerId)).toBeTruthy();
 
@@ -460,7 +464,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
       expect(after.polygon).not.toEqual(before.polygon);
     });
 
-    await test.step('экспорт → парсинг файла (v2-обёртка, enc-блоки, 10 зон)', async () => {
+    await test.step('экспорт → парсинг файла (v2-обёртка, enc-блоки, N+1 зон)', async () => {
       await page.click('#menuBtn');
       await page.waitForSelector('#menuModal.show');
       const [download] = await Promise.all([
@@ -470,7 +474,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
       const doc = JSON.parse(fs.readFileSync(await download.path(), 'utf8'));
       expect(doc.schema).toBe('dk-map/v2');
       expect(doc.mapOrientation).toBe('v2');
-      expect(doc.items.length).toBe(10);
+      expect(doc.items.length).toBe(baseZones + 1);
       const encCount = doc.items.filter((z) => z.gmText && z.gmText.enc === true).length;
       expect(encCount).toBeGreaterThan(0);
       for (const item of doc.items) {
@@ -481,7 +485,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
       await page.click('#menuClose');
     });
 
-    await test.step('удаление добавленных зоны и маркера → назад к 9·2', async () => {
+    await test.step('удаление добавленных зоны и маркера → назад к N·2', async () => {
       await page.locator(`.dk-marker[data-marker-id="${newMarkerId}"]`).dispatchEvent('click');
       await page.waitForSelector('#m_del');
       page.once('dialog', (d) => d.accept());
@@ -496,9 +500,9 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
 
       const zones = await page.evaluate(() => window.DKEditor.getZones().length);
       const markers = await page.evaluate(() => window.DKEditor.getMarkers().length);
-      expect(zones).toBe(9);
-      expect(markers).toBe(2);
-      await expect(page.locator('#side')).toContainText('Зон: 9 · маркеров: 2');
+      expect(zones).toBe(baseZones);
+      expect(markers).toBe(baseMarkers);
+      await expect(page.locator('#side')).toContainText(`Зон: ${baseZones} · маркеров: ${baseMarkers}`);
     });
 
     await test.step('сброс правок', async () => {
@@ -508,7 +512,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
       await page.click('#resetWork');
       await page.waitForTimeout(150);
       expect(await page.evaluate(() => localStorage.getItem('dk_work_v2'))).toBeNull();
-      expect(await page.evaluate(() => window.DKEditor.getZones().length)).toBe(9);
+      expect(await page.evaluate(() => window.DKEditor.getZones().length)).toBe(baseZones);
     });
 
     await test.step('lock → возврат к read-виду', async () => {
