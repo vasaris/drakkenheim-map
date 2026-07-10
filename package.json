@@ -1,0 +1,12 @@
+{
+  "name": "drakkenheim-map-tests",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "test": "playwright test tests/correctness.spec.js",
+    "test:perf": "playwright test tests/perf.spec.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.47.0"
+  }
+}

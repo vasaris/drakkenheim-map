@@ -12,3 +12,9 @@ assets/*
 # does not catch the symlink itself)
 tiles
 tiles/
+
+# Ф3.3-Т: Playwright test harness
+node_modules/
+test-results/
+playwright-report/
+artifacts/
