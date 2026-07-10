@@ -58,8 +58,10 @@ test.describe('correctness: ?engine=leaflet (Ф3.3 fog-engine)', () => {
   });
 
   test('b) вырезы тумана зафиксированы к миру на зумах [0, 2.5, 5, 7]', async ({ page }) => {
-    // Геометрия берётся из уже отрисованных .leaf-hazezone (TEST_CUTOUTS сейчас,
-    // реальные зоны после Ф3.4) — id и координаты не хардкодятся.
+    // Геометрия — реальные зоны (Ф3.4, data/v2/zones.json), id/координаты не хардкодятся.
+    // Зоны подгружаются асинхронным fetch (не синхронно, как TEST_CUTOUTS до Ф3.4) —
+    // дождаться появления хотя бы одного выреза в DOM явно, а не полагаться на 'load'.
+    await page.waitForFunction(() => document.querySelectorAll('#map svg .leaf-hazezone').length > 0);
     const zoneVerts = await page.evaluate(() => {
       const { IMG_W, IMG_H } = window.DKMapEngine;
       const polys = [...document.querySelectorAll('#map svg .leaf-hazezone')];

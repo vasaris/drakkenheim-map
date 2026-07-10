@@ -119,3 +119,12 @@ svg.canvas{display:block;}
 .toast.show{opacity:1;}
 
 @media (max-width:760px){ .side{width:280px;flex-basis:280px;} }
+
+/* Ф3.4: маркеры Leaflet-движка (?engine=leaflet), js/markers-engine.js */
+.dk-marker{background:none;border:none;}
+.dk-marker-dot{display:block;width:14px;height:14px;border-radius:50%;
+  border:1.5px solid var(--void);box-shadow:0 0 0 3px rgba(0,0,0,.35);}
+.dk-marker-pop-band{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;
+  background:var(--stone);color:var(--ink);margin-bottom:6px;}
+.dk-marker-pop h3{margin:0 0 6px;font-family:"Forum",serif;font-weight:400;font-size:18px;color:var(--gold);}
+.dk-marker-pop p{margin:0;font-size:13px;line-height:1.5;color:#ddd6c7;white-space:pre-wrap;}

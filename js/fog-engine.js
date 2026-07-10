@@ -70,36 +70,49 @@
   });
   svg.appendChild(fogRect);
 
-  // TEST GEOMETRY — remove in F3.4 (реальные зоны мигрируют туда). Норм-координаты (центр/угол).
-  var TEST_CUTOUTS = [
-    {id: 'test_center', status: 'known', points: [[0.42, 0.42], [0.58, 0.42], [0.58, 0.58], [0.42, 0.58]]},
-    {id: 'test_corner', status: 'scouted', points: [[0.05, 0.05], [0.2, 0.05], [0.2, 0.15], [0.05, 0.15]]},
-    {id: 'test_south', status: 'explored', points: [[0.3, 0.85], [0.5, 0.85], [0.5, 0.95], [0.3, 0.95]]}
-  ];
-  TEST_CUTOUTS.forEach(function (c) {
-    maskG.appendChild(el('polygon', {
-      'class': 'leaf-hazezone', 'data-zone': c.id,
-      points: c.points.map(function (p) { return normPointToSvg(p[0], p[1]); }).join(' '),
-      fill: FOG_HEX[c.status] || FOG_HEX.hidden
-    }));
-  });
-
   L.svgOverlay(svg, DK.bounds, {interactive: false, pane: 'overlayPane'}).addTo(DK.map);
 
-  console.log('fog-engine: overlay attached, ' + TEST_CUTOUTS.length + ' test cutouts (remove in F3.4)');
-
-  // ---- временный демо-хук reveal (?fogdemo=1) — TEMP, убрать в Ф3.6 вместе с ?fps=1 HUD
-  // (TEST GEOMETRY выше уходит отдельно, в Ф3.4, при миграции реальных зон) ----
   var Q = new URLSearchParams(location.search);
-  if (Q.get('fogdemo') === '1') {
-    var demoPoly = maskG.querySelector('.leaf-hazezone[data-zone="test_center"]');
-    var open = false;
-    setInterval(function () {
-      open = !open;
-      demoPoly.setAttribute('fill', open ? FOG_HEX.explored : FOG_HEX.known);
-      console.log('fogdemo: test_center ->', open ? 'explored' : 'known');
-    }, 2500);
-  }
+
+  // Ф3.4: реальные зоны из data/v2/zones.json (мигрированные книжные координаты).
+  // Загрузка асинхронная — вырезы появляются в маске чуть позже, чем сам оверлей
+  // монтируется на карту; это ожидаемо (см. tests/correctness.spec.js, ждёт
+  // .leaf-hazezone явно, а не полагается на синхронность).
+  fetch('data/v2/zones.json', {cache: 'no-store'})
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); })
+    .then(function (data) {
+      var zones = (data && data.items) || [];
+      zones.forEach(function (z) {
+        if (!z.polygon || z.polygon.length < 3) return;
+        maskG.appendChild(el('polygon', {
+          'class': 'leaf-hazezone', 'data-zone': z.id,
+          points: z.polygon.map(function (p) { return normPointToSvg(p[0], p[1]); }).join(' '),
+          fill: FOG_HEX[z.status] || FOG_HEX.hidden
+        }));
+      });
+      console.log('fog-engine: overlay attached, ' + zones.length + ' zones (data/v2/zones.json)');
+
+      // ---- временный демо-хук reveal (?fogdemo=1) — TEMP, убрать в Ф3.6 вместе с ?fps=1 HUD.
+      // Целевая зона — первая со status=known на момент загрузки (сейчас это 'outskirts'),
+      // не хардкод id: если данные поменяются, демо просто возьмёт другую известную зону.
+      if (Q.get('fogdemo') === '1') {
+        var demoZone = zones.filter(function (z) { return z.status === 'known'; })[0] || zones[0];
+        if (demoZone) {
+          var demoPoly = maskG.querySelector('.leaf-hazezone[data-zone="' + demoZone.id + '"]');
+          var open = false;
+          setInterval(function () {
+            open = !open;
+            demoPoly.setAttribute('fill', open ? FOG_HEX.explored : FOG_HEX.known);
+            console.log('fogdemo: ' + demoZone.id + ' ->', open ? 'explored' : 'known');
+          }, 2500);
+        } else {
+          console.warn('fogdemo: нет ни одной зоны для демо-реveal');
+        }
+      }
+    })
+    .catch(function (err) {
+      console.error('fog-engine: не удалось загрузить data/v2/zones.json', err);
+    });
 
   // ---- временный FPS-HUD (?fps=1[&auto=1]) — TEMP, убрать в Ф3.6 вместе с ?fogdemo=1.
   // Методика 1:1 со стендом dk-spike: тот же rAF-счётчик (окно 500ms, скользящий worst5s
