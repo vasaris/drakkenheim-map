@@ -1,0 +1,196 @@
+{
+  "schema": "dk-map/haze-v1",
+  "_comment": "Ф3.6-fix2в: контуры Deep Haze. Источник — Dungeons_of_Drakkenheim.pdf, стр.258-259 (\"Haze map\", на неё явно ссылается текст книги стр.66: \"The Haze map at the back of this book indicates which areas of the city are covered by the Deep Haze\"). Обе страницы стыкуются вертикально в 3300x5100 — ровно V2_W/V2_H из migrate-v3.mjs; это тот же исходник, с которого снимался v2->v3 фит, поэтому координаты переведены СУЩЕСТВУЮЩИМИ коэффициентами A/B/C/D/E/F migrate-v3.mjs (не новый фит) — проверено на landmark'ах (замок/кратер, расхождение с zones.json centroid <=0.012).",
+  "areas": [
+    {
+      "id": "queens_park",
+      "name": "Парк Королевы",
+      "kind": "deep",
+      "_source": "text-confirmed",
+      "_textRef": "DoD p.66 (rules): \"near the Inscrutable Tower, Queen's Park, the crater\"; p.134 area text: \"Queen's Park Garden is entirely suffused by the Deep Haze\"",
+      "polygon": [
+        [
+          0.4518,
+          0.2651
+        ],
+        [
+          0.3842,
+          0.269
+        ],
+        [
+          0.3803,
+          0.3125
+        ],
+        [
+          0.3996,
+          0.3337
+        ],
+        [
+          0.475,
+          0.3337
+        ],
+        [
+          0.4808,
+          0.2873
+        ]
+      ]
+    },
+    {
+      "id": "castle_drakken",
+      "name": "Замок Драккен",
+      "kind": "deep",
+      "_source": "text-confirmed",
+      "_textRef": "DoD: \"the Haze overtook Castle Drakken fifteen years ago\"; haze husks noted inside the castle",
+      "polygon": [
+        [
+          0.558,
+          0.1443
+        ],
+        [
+          0.5966,
+          0.1579
+        ],
+        [
+          0.616,
+          0.1965
+        ],
+        [
+          0.5966,
+          0.2352
+        ],
+        [
+          0.558,
+          0.2506
+        ],
+        [
+          0.5194,
+          0.241
+        ],
+        [
+          0.4943,
+          0.2081
+        ],
+        [
+          0.5001,
+          0.1637
+        ]
+      ]
+    },
+    {
+      "id": "old_town",
+      "name": "Старый Город",
+      "kind": "deep",
+      "_source": "map-traced",
+      "_textRef": "no corroborating book prose found (checked full-text search) — Deep Haze cloud visible only on the Haze map (pp.258-259), traced from there",
+      "polygon": [
+        [
+          0.5851,
+          0.3009
+        ],
+        [
+          0.616,
+          0.3125
+        ],
+        [
+          0.6276,
+          0.3395
+        ],
+        [
+          0.616,
+          0.3704
+        ],
+        [
+          0.5851,
+          0.382
+        ],
+        [
+          0.5542,
+          0.3704
+        ],
+        [
+          0.5426,
+          0.3395
+        ],
+        [
+          0.5542,
+          0.3125
+        ]
+      ]
+    },
+    {
+      "id": "crater",
+      "name": "Кратер",
+      "kind": "crater",
+      "_source": "text-confirmed",
+      "_textRef": "DoD p.66: \"near the Inscrutable Tower, Queen's Park, the crater\"; p.127: \"the Haze here is significantly thicker\"; area text: \"the Deep Haze is exceptionally [thick]\" within the crater",
+      "polygon": [
+        [
+          0.6218,
+          0.4168
+        ],
+        [
+          0.6604,
+          0.44
+        ],
+        [
+          0.674,
+          0.4883
+        ],
+        [
+          0.6546,
+          0.5308
+        ],
+        [
+          0.616,
+          0.5501
+        ],
+        [
+          0.5677,
+          0.5366
+        ],
+        [
+          0.5484,
+          0.4825
+        ],
+        [
+          0.5677,
+          0.4342
+        ]
+      ]
+    },
+    {
+      "id": "south_ward",
+      "name": "Южный Квартал",
+      "kind": "deep",
+      "_source": "text-confirmed",
+      "_textRef": "DoD area text: \"The entire South Ward is suffused in the Deep Haze\"",
+      "polygon": [
+        [
+          0.5829593487200928,
+          0.43303533701910657
+        ],
+        [
+          0.5829782052082212,
+          0.5710089039573997
+        ],
+        [
+          0.5319845172319367,
+          0.6005774055090582
+        ],
+        [
+          0.4873561170931269,
+          0.5611587814406028
+        ],
+        [
+          0.48734130128102604,
+          0.4527509788462297
+        ],
+        [
+          0.5319602731757717,
+          0.4231828194455385
+        ]
+      ],
+      "_note": "Полигон — СНИМОК зоны south_ward на момент генерации этого файла (2026-07-12), не живая ссылка на zones.json. Если геометрию south_ward когда-нибудь поправят в редакторе/скриптом, этот полигон НЕ обновится автоматически — придётся перегенерировать вручную."
+    }
+  ]
+}

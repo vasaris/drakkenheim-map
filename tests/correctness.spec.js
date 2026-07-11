@@ -55,47 +55,75 @@ test.describe('correctness: Ф3.3 fog-engine', () => {
     expect(statuses.some((s) => s === 200)).toBe(true);
   });
 
-  test('b) вырезы тумана зафиксированы к миру на зумах [0, 2.5, 5, 7]', async ({ page }) => {
-    // Геометрия — реальные зоны (Ф3.5в, data/v3/zones.json), id/координаты не хардкодятся.
-    // Зоны подгружаются асинхронным fetch (не синхронно, как TEST_CUTOUTS до Ф3.4) —
-    // дождаться появления хотя бы одного выреза в DOM явно, а не полагаться на 'load'.
-    await page.waitForFunction(() => document.querySelectorAll('#map svg .leaf-hazezone').length > 0);
-    const zoneVerts = await page.evaluate(() => {
-      const { IMG_W, IMG_H } = window.DKMapEngine;
-      const polys = [...document.querySelectorAll('#map svg .leaf-hazezone')];
-      return polys.slice(0, 3).map((p) => {
-        const [px, py] = p.getAttribute('points').trim().split(/\s+/)[0].split(',').map(Number);
-        return { zone: p.dataset.zone, nx: px / IMG_W, ny: py / IMG_H, px, py };
+  // Ф3.6-fix2в: туман войны (per-zone статусные вырезы) отменён — вместо позиционной
+  // проверки вырезов теперь проверяем ПЛОТНОСТЬ вуали в конкретных точках. Рендер-тест
+  // (не DOM/геометрия): клонируем живой SVG, ОБЯЗАТЕЛЬНО снимаем инлайн-style (Leaflet
+  // проставляет свой width/height под текущий зум — если его не убрать, клон рендерится
+  // в CSS-разрешении, а не в честных world-px, и все замеры плотности врут — поймано и
+  // подробно описано в отчёте Ф3.6-fix2б), рисуем на чёрном фоне и берём канал R как
+  // прокси плотности (fogRect — сплошной #5e4488, alpha от mask-luminance, на чёрном
+  // фоне композит строго пропорционален alpha).
+  async function sampleFogDensity(page, nx, ny) {
+    return page.evaluate(({ nx, ny }) => {
+      return new Promise((resolve, reject) => {
+        const DKm = window.DKMapEngine;
+        const liveSvg = document.querySelector('.leaflet-overlay-pane svg.leaf-fog-anim');
+        const vb = liveSvg.viewBox.baseVal;
+        const clone = liveSvg.cloneNode(true);
+        clone.removeAttribute('style');
+        clone.setAttribute('width', String(vb.width));
+        clone.setAttribute('height', String(vb.height));
+        const markup = new XMLSerializer().serializeToString(clone);
+        const blob = new Blob([markup], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = vb.width;
+          canvas.height = vb.height;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const rawX = nx * DKm.MASTER_SIZE, rawY = ny * DKm.MASTER_SIZE;
+          const d = ctx.getImageData(rawX, rawY, 1, 1).data;
+          URL.revokeObjectURL(url);
+          resolve(d[0]); // R-канал fogColor(94,68,136) — монотонен по alpha, годится как прокси плотности
+        };
+        img.onerror = reject;
+        img.src = url;
       });
-    });
-    expect(zoneVerts.length, 'нужно хотя бы 2 вырeза в DOM для проверки').toBeGreaterThanOrEqual(2);
+    }, { nx, ny });
+  }
 
-    for (const zoom of [0, 2.5, 5, 7]) {
-      await page.evaluate((z) => window.DKMapEngine.map.setZoom(z, { animate: false }), zoom);
-      // дать композитору применить CSS-transform оверлея после смены зума
-      await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
-      await page.waitForTimeout(30);
+  test('b) вуаль покрывает лист + плотность Deep Haze выше базовой (Парк, Кратер, обычная улица, лес, кромка)', async ({ page }) => {
+    await page.waitForFunction(() => !!document.querySelector('.leaf-haze-crater, .leaf-haze-deep'));
 
-      for (const v of zoneVerts) {
-        const { expected, actual } = await page.evaluate(({ nx, ny, px, py, zone }) => {
-          const DK = window.DKMapEngine;
-          const ll = DK.normToLatLng(nx, ny);
-          const cp = DK.map.latLngToContainerPoint(ll);
-          const mapRect = document.getElementById('map').getBoundingClientRect();
-          const expected = { x: mapRect.left + cp.x, y: mapRect.top + cp.y };
+    const points = {
+      forest: [0.10, 0.50],       // глубокий лес/outskirts — вне haze.json
+      regularStreet: [0.268, 0.461], // центр zones.json sprawl — городская зона БЕЗ Deep Haze
+      edge: [0.02, 0.50],         // кромка листа — база обязана дотягивать и сюда
+      queensPark: [0.4286, 0.3002], // центроид haze.json queens_park (kind=deep)
+      crater: [0.6138, 0.4849],     // центроид haze.json crater (kind=crater)
+    };
 
-          const svg = document.querySelector('#map svg');
-          const poly = svg.querySelector('.leaf-hazezone[data-zone="' + zone + '"]');
-          const pt = svg.createSVGPoint();
-          pt.x = px; pt.y = py;
-          const screenPt = pt.matrixTransform(poly.getScreenCTM());
-          return { expected, actual: { x: screenPt.x, y: screenPt.y } };
-        }, v);
-
-        expect(Math.abs(expected.x - actual.x), `zoom=${zoom} zone=${v.zone} x`).toBeLessThanOrEqual(2);
-        expect(Math.abs(expected.y - actual.y), `zoom=${zoom} zone=${v.zone} y`).toBeLessThanOrEqual(2);
-      }
+    const density = {};
+    for (const [label, [nx, ny]] of Object.entries(points)) {
+      density[label] = await sampleFogDensity(page, nx, ny);
     }
+
+    // вуаль покрывает лист целиком — ни в лесу, ни на кромке нет дыр (плотность > 0)
+    expect(density.forest, 'лес: вуаль должна покрывать (плотность > 0)').toBeGreaterThan(0);
+    expect(density.edge, 'кромка листа: вуаль должна покрывать (плотность > 0)').toBeGreaterThan(0);
+
+    // статусы зон от тумана отвязаны — обычная городская улица не гуще леса (тот же базовый слой)
+    expect(Math.abs(density.regularStreet - density.forest), 'обычная улица должна быть на уровне базовой плотности, не гуще').toBeLessThanOrEqual(3);
+
+    // Deep Haze заметно плотнее базового слоя
+    expect(density.queensPark, 'Парк Королевы обязан быть плотнее базовой Дымки').toBeGreaterThan(density.forest + 20);
+
+    // kind=crater — максимальная плотность, гуще обычного Deep Haze
+    expect(density.crater, 'Кратер обязан быть плотнее Парка (kind=crater — максимум)').toBeGreaterThan(density.queensPark);
   });
 
   test(`c) в DOM нет feTurbulence в пределах ${FOG_SCOPE}`, async ({ page }) => {
@@ -103,13 +131,8 @@ test.describe('correctness: Ф3.3 fog-engine', () => {
     expect(count).toBe(0);
   });
 
-  test('d) reveal: transition ~1.1s на вырезах тумана (computed style)', async ({ page }) => {
-    await page.waitForFunction(() => !!document.querySelector('#map svg .leaf-hazezone'));
-    const durMs = await page.evaluate(() => {
-      const el = document.querySelector('#map svg .leaf-hazezone');
-      return parseFloat(getComputedStyle(el).transitionDuration) * 1000;
-    });
-    expect(durMs).toBeGreaterThanOrEqual(1050);
-    expect(durMs).toBeLessThanOrEqual(1150);
-  });
+  // Ф3.6-fix2в: тест (d) «reveal: transition ~1.1s на вырезах тумана» удалён — вместе
+  // с per-zone статусными вырезами исчез и сам reveal (смена fill зоны в рантайме).
+  // Deep Haze грузится один раз из haze.json и не меняется в рантайме — animировать
+  // на смену уже нечего (см. комментарий в js/fog-engine.js).
 });

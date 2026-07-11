@@ -89,6 +89,33 @@ test.describe('golden: структурные инварианты data/v3', () 
     }
   });
 
+  // Ф3.6-fix2в: haze.json — отдельная сущность (канон DoD Deep Haze, не игровые
+  // статусы), свой файл, свой schema-штамп. Структурный инвариант в том же духе, что 8а.
+  test('8д) haze.json валиден: схема, kind, id уникальны, полигоны в [0,1]', () => {
+    const hazeDoc = readJSON(path.join(ROOT, 'data', 'v3', 'haze.json'));
+
+    expect(hazeDoc.schema).toBe('dk-map/haze-v1');
+    expect(Array.isArray(hazeDoc.areas)).toBe(true);
+    expect(hazeDoc.areas.length).toBeGreaterThan(0);
+
+    const ids = hazeDoc.areas.map((a) => a.id);
+    expect(new Set(ids).size, 'дублирующийся id области Deep Haze').toBe(ids.length);
+
+    const VALID_KINDS = new Set(['deep', 'crater']);
+    for (const a of hazeDoc.areas) {
+      expect(VALID_KINDS.has(a.kind), `haze area ${a.id}: kind "${a.kind}" не deep/crater`).toBe(true);
+      expect(Array.isArray(a.polygon) && a.polygon.length >= 3, `haze area ${a.id}: <3 вершин`).toBe(true);
+      a.polygon.forEach((pt, i) => {
+        expect(inBounds01(pt[0]), `haze area ${a.id} vertex ${i} x вне [0,1]`).toBe(true);
+        expect(inBounds01(pt[1]), `haze area ${a.id} vertex ${i} y вне [0,1]`).toBe(true);
+      });
+    }
+
+    // ровно одна область максимальной плотности — канон DoD: кратер один
+    const craters = hazeDoc.areas.filter((a) => a.kind === 'crater');
+    expect(craters.length, 'ожидалась ровно одна область kind=crater (Кратер)').toBe(1);
+  });
+
   test('8в) в data/v3 нет ни одного плейнтекст-поля gmText', () => {
     const zonesV3 = readJSON(path.join(ROOT, 'data', 'v3', 'zones.json')).items;
     const markersV3 = readJSON(path.join(ROOT, 'data', 'v3', 'markers.json')).items;

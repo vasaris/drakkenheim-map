@@ -30,10 +30,12 @@ const TARGETS = [
     key: 'prod',
     label: 'прод :8032 (Ф3.3 fog-engine, tiles_v3 квадратный русский мастер)',
     url: 'http://localhost:8032/',
-    hazezoneSelector: '#map svg .leaf-hazezone',
+    // Ф3.6-fix2в: per-zone вырезы (.leaf-hazezone) отменены — два слоя вуали теперь,
+    // фетеринг-шов есть по краю Deep Haze (.leaf-haze-deep/.leaf-haze-crater), не зон.
+    hazezoneSelector: '#map svg .leaf-haze-deep, #map svg .leaf-haze-crater',
     ready: (page) => page.waitForFunction(() => !!(
       window.DKMapEngine && window.DKMapEngine.map
-      && document.querySelector('#map svg .leaf-hazezone')
+      && document.querySelector('#map svg .leaf-haze-deep, #map svg .leaf-haze-crater')
     )),
     normOfPoint: (page, px, py) => page.evaluate(({ px, py }) => {
       const DK = window.DKMapEngine;
@@ -224,7 +226,7 @@ test.describe('perf @perf: прод vs стенд (CDP frame tracing, headed)', 
             const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
             const nmx = (mx - vb.x) / vb.width, nmy = (my - vb.y) / vb.height;
             const dist = Math.hypot(nmx - 0.5, nmy - 0.5);
-            if (dist < bestDist) { bestDist = dist; best = { px: mx, py: my }; bestZone = poly.dataset.zone; }
+            if (dist < bestDist) { bestDist = dist; best = { px: mx, py: my }; bestZone = poly.dataset.zone || poly.dataset.haze; }
           }
         }
         return { ...best, zone: bestZone };

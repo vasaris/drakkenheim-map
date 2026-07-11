@@ -146,7 +146,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
     expect(lastMarker.zone).toBe(newZoneId);
   });
 
-  test('06) смена статуса зоны → немедленно видна в DOM тумана', async ({ page }) => {
+  test('06) смена статуса зоны → цвет полигона в редакторе (статусы от тумана отвязаны, Ф3.6-fix2в)', async ({ page }) => {
     await page.goto('/?gmfixture=empty', { waitUntil: 'load' });
     await page.waitForFunction(() => !!window.DKEditor);
     await unlockSetup(page, 'e2e-editor-pw');
@@ -160,11 +160,14 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
     await page.click('.statusgrid .sb-explored');
     await page.waitForTimeout(50);
 
+    // Ф3.6-fix2в: статусы зон больше НЕ влияют на туман (js/fog-engine.js их не читает
+    // вовсе) — проверяем цвет СВОЕГО слоя редактора (STATUS_COLOR, editor-engine.js),
+    // не .leaf-hazezone (эта сущность отменена вместе с per-zone вырезами).
     const fill = await page.evaluate((id) => {
-      const el = document.querySelector(`#map svg .leaf-hazezone[data-zone="${id}"]`);
+      const el = document.querySelector(`.dk-editor-zone[data-zone-id="${id}"]`);
       return el ? el.getAttribute('fill') : null;
     }, zoneId);
-    expect(fill).toBe('#000000'); // FOG_HEX.explored, см. js/fog-engine.js
+    expect(fill).toBe('#5fae74'); // STATUS_COLOR.explored, см. js/editor-engine.js
     const status = await page.evaluate(() => window.DKEditor.getZones()[0].status);
     expect(status).toBe('explored');
   });
@@ -390,16 +393,16 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
       await expect(page.locator('#side')).toContainText(`Зон: ${baseZones + 1} · маркеров: ${baseMarkers}`);
     });
 
-    await test.step('статус → вырез в DOM тумана', async () => {
+    await test.step('статус → цвет полигона в редакторе (Ф3.6-fix2в: от тумана отвязано)', async () => {
       // новая зона уже выбрана (finishZone ставит sel на неё)
       await page.waitForSelector('.statusgrid');
       await page.click('.statusgrid .sb-scouted');
       await page.waitForTimeout(50);
       const fill = await page.evaluate((id) => {
-        const el = document.querySelector(`#map svg .leaf-hazezone[data-zone="${id}"]`);
+        const el = document.querySelector(`.dk-editor-zone[data-zone-id="${id}"]`);
         return el ? el.getAttribute('fill') : null;
       }, newZoneId);
-      expect(fill).toBe('#262626'); // FOG_HEX.scouted, см. js/fog-engine.js
+      expect(fill).toBe('#c19036'); // STATUS_COLOR.scouted, см. js/editor-engine.js
     });
 
     await test.step('маркер с авто-зоной', async () => {
