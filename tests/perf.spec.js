@@ -29,7 +29,7 @@ const TARGETS = [
   {
     key: 'prod',
     label: 'прод :8032 (Ф3.3 fog-engine, tiles_v3 квадратный русский мастер)',
-    url: 'http://localhost:8032/?engine=leaflet',
+    url: 'http://localhost:8032/',
     hazezoneSelector: '#map svg .leaf-hazezone',
     ready: (page) => page.waitForFunction(() => !!(
       window.DKMapEngine && window.DKMapEngine.map

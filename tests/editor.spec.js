@@ -1,4 +1,4 @@
-// Ф3.5б: E2E авторского режима (js/editor-engine.js, ?engine=leaflet). Каждый test()
+// Ф3.5б: E2E авторского режима (js/editor-engine.js). Каждый test()
 // получает свежий browser context (изолированный localStorage) — черновики между
 // тестами не текут. Фикстуры — те же, что у gm-engine.js (tests/fixtures/gm-{fixture,
 // empty}-*.json через ?gmfixture=...), отдельных editor-* фикстур не заводим (формат
@@ -42,7 +42,7 @@ async function normToScreen(page, nx, ny) {
 
 test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', () => {
   test('01) рисовать зону: 3+ клика → Enter → зона в черновике, счётчик +1', async ({ page }) => {
-    await page.goto('/?engine=leaflet&gmfixture=empty', { waitUntil: 'load' });
+    await page.goto('/?gmfixture=empty', { waitUntil: 'load' });
     await page.waitForFunction(() => !!window.DKEditor);
     await unlockSetup(page, 'e2e-editor-pw');
 
@@ -63,7 +63,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
   });
 
   test('02) Esc во время рисования — отмена, ничего не создано', async ({ page }) => {
-    await page.goto('/?engine=leaflet&gmfixture=empty', { waitUntil: 'load' });
+    await page.goto('/?gmfixture=empty', { waitUntil: 'load' });
     await page.waitForFunction(() => !!window.DKEditor);
     await unlockSetup(page, 'e2e-editor-pw');
 
@@ -82,7 +82,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
   });
 
   test('03) < 3 точек на «Завершить» — рисование отменяется с тостом, не «висит»', async ({ page }) => {
-    await page.goto('/?engine=leaflet&gmfixture=empty', { waitUntil: 'load' });
+    await page.goto('/?gmfixture=empty', { waitUntil: 'load' });
     await page.waitForFunction(() => !!window.DKEditor);
     await unlockSetup(page, 'e2e-editor-pw');
 
@@ -99,7 +99,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
   });
 
   test('04) перерисовать контур существующей зоны — новые точки заменяют старые, id/поля не меняются', async ({ page }) => {
-    await page.goto('/?engine=leaflet&gmfixture=empty', { waitUntil: 'load' });
+    await page.goto('/?gmfixture=empty', { waitUntil: 'load' });
     await page.waitForFunction(() => !!window.DKEditor);
     await unlockSetup(page, 'e2e-editor-pw');
 
@@ -124,7 +124,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
   });
 
   test('05) + Маркер клик внутри существующего полигона зоны → marker.zone проставляется автоматически', async ({ page }) => {
-    await page.goto('/?engine=leaflet&gmfixture=empty', { waitUntil: 'load' });
+    await page.goto('/?gmfixture=empty', { waitUntil: 'load' });
     await page.waitForFunction(() => !!window.DKEditor);
     await unlockSetup(page, 'e2e-editor-pw');
 
@@ -147,7 +147,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
   });
 
   test('06) смена статуса зоны → немедленно видна в DOM тумана', async ({ page }) => {
-    await page.goto('/?engine=leaflet&gmfixture=empty', { waitUntil: 'load' });
+    await page.goto('/?gmfixture=empty', { waitUntil: 'load' });
     await page.waitForFunction(() => !!window.DKEditor);
     await unlockSetup(page, 'e2e-editor-pw');
 
@@ -170,7 +170,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
   });
 
   test('07) правка «Заметки автора» → localStorage несёт валидный v2-блок с AAD=id, не plaintext', async ({ page }) => {
-    await page.goto('/?engine=leaflet&gmfixture=empty', { waitUntil: 'load' });
+    await page.goto('/?gmfixture=empty', { waitUntil: 'load' });
     await page.waitForFunction(() => !!window.DKEditor);
     await unlockSetup(page, 'e2e-editor-pw');
 
@@ -192,7 +192,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
   });
 
   test('08) round-trip: блок из localStorage расшифровывается тем же сессионным ключом', async ({ page }) => {
-    await page.goto('/?engine=leaflet&gmfixture=empty', { waitUntil: 'load' });
+    await page.goto('/?gmfixture=empty', { waitUntil: 'load' });
     await page.waitForFunction(() => !!window.DKEditor);
     await unlockSetup(page, 'e2e-editor-pw');
 
@@ -220,7 +220,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
   });
 
   test('09) удалить зону/маркер → пропадает с карты и из черновика, счётчик −1', async ({ page }) => {
-    await page.goto('/?engine=leaflet&gmfixture=empty', { waitUntil: 'load' });
+    await page.goto('/?gmfixture=empty', { waitUntil: 'load' });
     await page.waitForFunction(() => !!window.DKEditor);
     await unlockSetup(page, 'e2e-editor-pw');
 
@@ -252,7 +252,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
   });
 
   test('10) экспорт zones.json — валидный v2-документ, gmText это enc-блоки, не plaintext', async ({ page }) => {
-    await page.goto('/?engine=leaflet&gmfixture=empty', { waitUntil: 'load' });
+    await page.goto('/?gmfixture=empty', { waitUntil: 'load' });
     await page.waitForFunction(() => !!window.DKEditor);
     await unlockSetup(page, 'e2e-editor-pw');
 
@@ -288,7 +288,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
   });
 
   test('11) конфликт с репо: baseline≠live → баннер; «Сбросить» → черновик чистится, приходят live-данные', async ({ page }) => {
-    await page.goto('/?engine=leaflet&gmfixture=empty', { waitUntil: 'load' });
+    await page.goto('/?gmfixture=empty', { waitUntil: 'load' });
     await page.waitForFunction(() => !!window.DKEditor);
     await unlockSetup(page, 'e2e-editor-pw');
 
@@ -330,7 +330,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
   });
 
   test('12) редактор недоступен без разлочки', async ({ page }) => {
-    await page.goto('/?engine=leaflet&gmfixture=empty', { waitUntil: 'load' });
+    await page.goto('/?gmfixture=empty', { waitUntil: 'load' });
     await page.waitForFunction(() => !!window.DKEditor);
 
     await expect(page.locator('#side')).toHaveClass(/hidden/);
@@ -355,7 +355,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
     let newZoneId, newMarkerId, baseZones, baseMarkers;
 
     await test.step('unlock (фикстурный пароль на клоне боевой геометрии)', async () => {
-      await page.goto('/?engine=leaflet&gmfixture=lifecycle', { waitUntil: 'load' });
+      await page.goto('/?gmfixture=lifecycle', { waitUntil: 'load' });
       await page.waitForFunction(() => !!window.DKEditor);
       await unlockSetup(page, LIFECYCLE_PW);
       await page.waitForTimeout(150);

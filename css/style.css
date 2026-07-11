@@ -31,45 +31,16 @@ button.btn.warn{border-color:#6a2b2b;color:#e7a9a9;}
 /* edit-only chrome: hidden in viewer (!important beats button.btn specificity), shown in master mode */
 body:not(.edit) .edit-only{display:none!important;}
 
-/* stage / viewport */
+/* stage / map */
 .stage{flex:1;display:flex;min-height:0;position:relative;}
-#map{position:absolute;inset:0;background:var(--void);display:none;}
-.viewport{flex:1;position:relative;overflow:hidden;cursor:grab;
-  background:radial-gradient(900px 600px at 50% 40%,#1a1320 0%,#0a0910 70%);}
-.viewport.grabbing{cursor:grabbing;}
-.viewport.draw{cursor:crosshair;}
-.world{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;}
-svg.canvas{display:block;}
+#map{position:absolute;inset:0;background:var(--void);}
 
-.zone{fill-opacity:.28;stroke-width:2;cursor:pointer;transition:fill-opacity .15s;}
-.zone:hover{fill-opacity:.45;}
-.zone.sel{stroke:var(--gold)!important;stroke-width:3.5;fill-opacity:.42;}
-.zlabel{font-family:"PT Sans",sans-serif;fill:var(--ink);paint-order:stroke;stroke:#0b0a10;
-  stroke-width:4px;text-anchor:middle;pointer-events:none;font-weight:700;}
-.marker{cursor:pointer;}
-.marker .halo{fill:#0b0a10;opacity:.55;}
-.marker .dot{stroke:#0b0a10;stroke-width:1.5;}
-.marker.sel .dot{stroke:var(--gold);stroke-width:3;}
-.mlabel{font-family:"PT Sans",sans-serif;fill:#efe9dd;paint-order:stroke;stroke:#0b0a10;
-  stroke-width:3px;text-anchor:middle;pointer-events:none;}
-.drawline{fill:rgba(201,168,95,.14);stroke:var(--gold);stroke-width:2;stroke-dasharray:6 5;pointer-events:none;}
-.drawpt{fill:var(--gold);pointer-events:none;}
-
-/* ---- themed Haze fog-of-war (amethyst Дымка; density via SVG mask, feathered + grain in defs) ---- */
-#fogract{opacity:0;}
-.haze-on #fogract{opacity:.96;animation:hazeBreathe 17s ease-in-out infinite alternate;}
-@keyframes hazeBreathe{from{opacity:.9;}to{opacity:1;}}            /* slow quiet "breathing" drift */
-.hazezone{transition:fill 1.1s ease;}                              /* smooth reveal/conceal on status change */
-@media (prefers-reduced-motion:reduce){ .haze-on #fogract{animation:none;opacity:.96;} }
-
-/* side panel (editor + Ф3.5а GM-панель на ?engine=leaflet).
-   position:relative — тот же класс бага, что и .modal (см. коммент у .pop ниже): #map
+/* side panel (editor + GM-панель).
+   position:relative — тот же класс бага, что и .modal (см. фикс модалки ниже): #map
    position:absolute;inset:0 в общем .stage перекрывает статичный (position:static)
    .side по правилам CSS-стекинга (позиционированные элементы всегда красятся поверх
-   статичных при пересечении, вне зависимости от z-index/DOM-порядка) — на v1-ветке эффекта
-   нет (#map там display:none), на leaflet-ветке без этого панель невидима целиком, даже без
-   тонкого обода, который был у .modal (см. фикс модалки) — .side ближе к левому краю
-   (единственный flex-сиблинг: #viewport на этой ветке display:none), полностью под картой. */
+   статичных при пересечении, вне зависимости от z-index/DOM-порядка) — без этого
+   панель невидима целиком, даже без тонкого обода, который был у .modal. */
 .side{width:340px;flex:0 0 340px;background:linear-gradient(180deg,var(--slate),#0e0d13);
   border-left:1px solid var(--stone);overflow-y:auto;font-family:"PT Sans",sans-serif;
   position:relative;z-index:9005;}
@@ -99,29 +70,17 @@ svg.canvas{display:block;}
 .gmbar input{flex:1;background:#100f16;border:1px solid var(--stone);border-radius:4px;color:var(--ink);font-size:13px;padding:6px 8px;font-family:inherit;}
 .gmlock{font-size:12px;color:var(--dim);background:#100f16;border:1px dashed var(--stone);border-radius:4px;padding:8px;line-height:1.4;margin-top:3px;}
 
-/* Ф3.5а: GM-панель (?engine=leaflet) — список зон/маркеров в #side, playerText + gmText */
+/* Ф3.5а: GM-панель — список зон/маркеров в #side, playerText + gmText */
 .side h4{margin:14px 0 4px;font-size:13px;letter-spacing:.03em;color:var(--gold);}
 .side .gmitem{padding:8px 0;border-top:1px solid var(--stone);}
 .side .gmitem:first-child{border-top:none;}
 .side .gmnote{white-space:pre-wrap;font-size:13px;line-height:1.5;color:#ddd6c7;margin:0;}
 .side .gmlegacy{margin-top:4px;}
 
-/* Ф3.5а-фикс: position:fixed оверлеи (.pop/.modal/.toast) обязаны перекрывать Leaflet —
+/* Ф3.5а-фикс: position:fixed оверлеи (.modal/.toast) обязаны перекрывать Leaflet —
    #map не создаёт свой stacking context (position:absolute + z-index:auto), поэтому
    z-index внутренних Leaflet-панов/контролов (200..1000, см. js/vendor/leaflet/leaflet.css)
-   сравнивается напрямую с этими элементами в общем контексте. Держим их выше с запасом;
-   относительный порядок между собой (pop < modal < toast) — как было. */
-/* player dossier popup */
-.pop{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);max-width:520px;width:92%;
-  background:linear-gradient(180deg,var(--slate),#0d0c12);border:1px solid var(--gold-dim);border-radius:8px;
-  padding:14px 18px;display:none;z-index:9000;font-family:"PT Sans",sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.55);}
-.pop.show{display:block;}
-.pop .x{position:absolute;top:8px;right:12px;cursor:pointer;color:var(--dim);}
-.pop .x:hover{color:var(--ink);}
-.pop-band{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;
-  background:var(--stone);color:var(--ink);margin-bottom:6px;}
-.pop h3{margin:0 0 6px;font-family:"Forum",serif;font-weight:400;font-size:20px;color:var(--gold);}
-.pop p{margin:0;font-size:14px;line-height:1.55;color:#ddd6c7;white-space:pre-wrap;}
+   сравнивается напрямую с этими элементами в общем контексте. Держим их выше с запасом. */
 
 /* modal */
 .modal{position:fixed;inset:0;background:rgba(6,5,9,.78);display:none;align-items:center;justify-content:center;z-index:9010;}
@@ -140,7 +99,7 @@ svg.canvas{display:block;}
 
 @media (max-width:760px){ .side{width:280px;flex-basis:280px;} }
 
-/* Ф3.4: маркеры Leaflet-движка (?engine=leaflet), js/markers-engine.js */
+/* Ф3.4: маркеры Leaflet-движка, js/markers-engine.js */
 .dk-marker{background:none;border:none;}
 .dk-marker-dot{display:block;width:14px;height:14px;border-radius:50%;
   border:1.5px solid var(--void);box-shadow:0 0 0 3px rgba(0,0,0,.35);}
@@ -159,9 +118,8 @@ svg.canvas{display:block;}
 /* Ф3.5б: авторский слой (js/editor-engine.js) — подписи зон/маркеров через L.Tooltip
    (permanent), а не свой div-icon (решение по спорному 7 — Leaflet сам пересчитывает
    позицию на zoom/pan). Убираем стандартный фон/рамку/тень Leaflet-тултипа (js/vendor/
-   leaflet/leaflet.css .leaflet-tooltip), оставляем только текст с тонкой тёмной обводкой —
-   как .zlabel/.mlabel v1 (там — paint-order:stroke в SVG; тут — -webkit-text-stroke,
-   тултип это HTML, не SVG-текст).
+   leaflet/leaflet.css .leaflet-tooltip), оставляем только текст с тонкой тёмной обводкой
+   (-webkit-text-stroke — тултип это HTML, не SVG-текст).
    Живой баг: селектор ОДНОГО класса (.dk-editor-zlabel) имеет ту же специфичность, что
    .leaflet-tooltip — leaflet.css подключается ПОЗЖЕ style.css (динамически, в цепочке
    бутстрапа index.html), поэтому при равной специфичности его правила побеждают по

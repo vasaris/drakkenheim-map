@@ -1,5 +1,4 @@
-// Ф3.3-Т: детерминированные проверки Leaflet fog-engine (?engine=leaflet) + гарантия,
-// что бутстрап без флага (app.js, легаси v1) не задет. Headless — ок, ничего из этого
+// Ф3.3-Т: детерминированные проверки Leaflet fog-engine. Headless — ок, ничего из этого
 // не измеряет FPS (см. perf.spec.js для этого, отдельно и headed).
 //
 // Архитектурный принцип (обязателен для всех тестов в этом файле, см. п. (f) ТЗ):
@@ -10,14 +9,13 @@
 
 const { test, expect } = require('@playwright/test');
 
-// Ф3.6: после сноса v1 переключить на document — вердикт B требует нулевого
-// feTurbulence во всём DOM. Пока v1 (#canvas) жив, его статический #hazeGrain
-// фильтр из index.html вне периметра Ф3.3 — скоуп сузен до #map.
-const FOG_SCOPE = process.env.FOG_SCOPE || '#map';
+// Ф3.6: v1 снесён — скоуп на весь document, вердикт B требует нулевого feTurbulence
+// во всём DOM.
+const FOG_SCOPE = process.env.FOG_SCOPE || 'document';
 
-test.describe('correctness: ?engine=leaflet (Ф3.3 fog-engine)', () => {
+test.describe('correctness: Ф3.3 fog-engine', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/?engine=leaflet', { waitUntil: 'load' });
+    await page.goto('/', { waitUntil: 'load' });
     await page.waitForFunction(() => !!(window.DKMapEngine && window.DKMapEngine.map));
   });
 
@@ -31,7 +29,7 @@ test.describe('correctness: ?engine=leaflet (Ф3.3 fog-engine)', () => {
       if (/\/tiles\/\d+\/\d+\/\d+\.png$/.test(new URL(res.url()).pathname)) tileResponses.push(res);
     });
 
-    await page.goto('/?engine=leaflet', { waitUntil: 'load' });
+    await page.goto('/', { waitUntil: 'load' });
     await page.waitForFunction(() => !!(window.DKMapEngine && window.DKMapEngine.map));
 
     const dk = await page.evaluate(() => ({
@@ -113,30 +111,5 @@ test.describe('correctness: ?engine=leaflet (Ф3.3 fog-engine)', () => {
     });
     expect(durMs).toBeGreaterThanOrEqual(1050);
     expect(durMs).toBeLessThanOrEqual(1150);
-  });
-});
-
-test.describe('correctness: без ?engine=leaflet (легаси v1 не задет)', () => {
-  test('e) app.js исполняется, #map скрыт, Leaflet не грузится', async ({ page }) => {
-    const requests = [];
-    page.on('request', (req) => requests.push(req.url()));
-
-    await page.goto('/', { waitUntil: 'load' });
-
-    // data-независимый сигнал того, что app.js реально прошёл render()/renderFog():
-    // haze-on ставится на body и мировая рамка получает размер вне зависимости от
-    // текущего статуса конкретных зон (в отличие от "хотя бы 1 видимая zone-полигон").
-    await page.waitForFunction(() => document.body.classList.contains('haze-on'));
-    const worldBorderW = await page.evaluate(() => Number(document.getElementById('worldBorder').getAttribute('width')));
-    expect(worldBorderW).toBeGreaterThan(0);
-
-    const mapDisplay = await page.evaluate(() => getComputedStyle(document.getElementById('map')).display);
-    expect(mapDisplay).toBe('none');
-
-    const hasDK = await page.evaluate(() => typeof window.DKMapEngine !== 'undefined');
-    expect(hasDK).toBe(false);
-
-    const leafletReqs = requests.filter((u) => /leaflet/i.test(u));
-    expect(leafletReqs).toHaveLength(0);
   });
 });

@@ -1,5 +1,4 @@
-// Ф3.3: Дымка (туман войны) для Leaflet-движка (?engine=leaflet).
-// Только эта ветка бутстрапа — app.js и его renderFog (v1) не трогаются.
+// Ф3.3: Дымка (туман войны) Leaflet-движка.
 //
 // Механизм и параметры — портированы из стенда ~/Downloads/dk-spike (вердикт B,
 // зафиксировано, не обсуждается):
@@ -97,8 +96,6 @@
     },
   };
 
-  var Q = new URLSearchParams(location.search);
-
   // Ф3.5в: реальные зоны из data/v3/zones.json (мигрированные на русский квадратный
   // мастер). Загрузка асинхронная — вырезы появляются в маске чуть позже, чем сам оверлей
   // монтируется на карту; это ожидаемо (см. tests/correctness.spec.js, ждёт
@@ -116,139 +113,8 @@
         }));
       });
       console.log('fog-engine: overlay attached, ' + zones.length + ' zones (data/v3/zones.json)');
-
-      // ---- временный демо-хук reveal (?fogdemo=1) — TEMP, убрать в Ф3.6 вместе с ?fps=1 HUD.
-      // Целевая зона — первая со status=known на момент загрузки (сейчас это 'outskirts'),
-      // не хардкод id: если данные поменяются, демо просто возьмёт другую известную зону.
-      if (Q.get('fogdemo') === '1') {
-        var demoZone = zones.filter(function (z) { return z.status === 'known'; })[0] || zones[0];
-        if (demoZone) {
-          var demoPoly = maskG.querySelector('.leaf-hazezone[data-zone="' + demoZone.id + '"]');
-          var open = false;
-          setInterval(function () {
-            open = !open;
-            demoPoly.setAttribute('fill', open ? FOG_HEX.explored : FOG_HEX.known);
-            console.log('fogdemo: ' + demoZone.id + ' ->', open ? 'explored' : 'known');
-          }, 2500);
-        } else {
-          console.warn('fogdemo: нет ни одной зоны для демо-реveal');
-        }
-      }
     })
     .catch(function (err) {
       console.error('fog-engine: не удалось загрузить data/v3/zones.json', err);
     });
-
-  // ---- временный FPS-HUD (?fps=1[&auto=1]) — TEMP, убрать в Ф3.6 вместе с ?fogdemo=1.
-  // Методика 1:1 со стендом dk-spike: тот же rAF-счётчик (окно 500ms, скользящий worst5s
-  // за 5с), тот же hop-стресс (4 точки/зума, flyTo 2.5s, суммарно 20s) для сценария «пан».
-  // Grain/blur-тумблеры стенда сюда не портируются — в проде это не параметры (grain
-  // не существует вовсе, blur — фиксированный литерал), сравнивать их нечего.
-  if (Q.get('fps') === '1') {
-    var hud = document.createElement('div');
-    hud.style.cssText = 'position:fixed;top:8px;left:8px;z-index:9999;' +
-      'font:12px monospace;background:rgba(0,0,0,.7);color:#0f0;' +
-      'padding:4px 8px;pointer-events:none;';
-    var fpsLine = document.createElement('div');
-    fpsLine.textContent = 'FPS: --';
-    var cfgLine = document.createElement('div');
-    cfgLine.textContent = 'cfg: leaflet fog-engine (blur=' + FEATHER_STD.toFixed(1) + ' anim=17s)';
-    cfgLine.style.color = '#ccc';
-    hud.appendChild(fpsLine);
-    hud.appendChild(cfgLine);
-    document.body.appendChild(hud);
-
-    var last = performance.now();
-    var winStart = last, frames = 0, worstWin = 0;
-    var recent = []; // плоские пары [t, dt] за последние 5с — прунится раз в окно, не в кадр
-
-    function tick(now) {
-      var dt = now - last; last = now;
-      frames++;
-      if (dt > worstWin) worstWin = dt;
-      recent.push(now, dt);
-
-      if (now - winStart >= 500) {
-        var cutoff = now - 5000;
-        var pruned = [];
-        var worst5 = 0;
-        for (var i = 0; i < recent.length; i += 2) {
-          if (recent[i] >= cutoff) {
-            pruned.push(recent[i], recent[i + 1]);
-            if (recent[i + 1] > worst5) worst5 = recent[i + 1];
-          }
-        }
-        recent = pruned;
-        var fps = frames * 1000 / (now - winStart);
-        fpsLine.textContent = 'FPS ' + fps.toFixed(0) +
-          ' | worst ' + worstWin.toFixed(0) + 'ms' +
-          ' | worst5s ' + worst5.toFixed(0) + 'ms';
-        fpsLine.style.color = fps < 25 ? '#f33' : fps < 45 ? '#ff0' : '#0f0';
-        window.__fpsStats = {fps: fps, worstMs: worstWin, worst5sMs: worst5};
-        if (window.__fpsRec) window.__fpsRec.push(fps, worstWin);
-        frames = 0; worstWin = 0; winStart = now;
-      }
-      requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
-
-    // ---- пан-стресс (?fps=1&auto=1): 4 точки/зума, как на стенде, 20с, авто-отчёт ----
-    if (Q.get('auto') === '1') {
-      var autoLine = document.createElement('div');
-      autoLine.style.color = '#8cf';
-      hud.appendChild(autoLine);
-
-      function runStress() {
-        var RUN_MS = 20000;
-        var points = [
-          [DK.normToLatLng(0.5, 0.5), 7],
-          [DK.normToLatLng(0.1, 0.1), 2],
-          [DK.normToLatLng(0.9, 0.9), 7],
-          [DK.normToLatLng(0.5, 0.5), 3]
-        ];
-        var pi = 0, finished = false;
-        var t0 = performance.now();
-        window.__fpsStats = null;
-        window.__fpsRec = [];
-        var timer = setInterval(function () {
-          var remain = Math.max(0, RUN_MS - (performance.now() - t0)) / 1000;
-          autoLine.textContent = 'AUTO пан-стресс: осталось ~' + Math.round(remain) + 'с';
-          if (performance.now() - t0 >= RUN_MS + 5000 && !finished) finish();
-        }, 500);
-
-        function hop() {
-          if (performance.now() - t0 >= RUN_MS) return finish();
-          var pz = points[pi % points.length];
-          pi++;
-          DK.map.once('moveend', hop);
-          DK.map.flyTo(pz[0], pz[1], {duration: 2.5});
-        }
-        function finish() {
-          if (finished) return;
-          finished = true;
-          clearInterval(timer);
-          DK.map.stop();
-          var rec = window.__fpsRec || [];
-          window.__fpsRec = null;
-          var sum = 0, min = Infinity, worst = 0, n = 0;
-          for (var i = 0; i < rec.length; i += 2) {
-            sum += rec[i]; n++;
-            if (rec[i] < min) min = rec[i];
-            if (rec[i + 1] > worst) worst = rec[i + 1];
-          }
-          var stats = n ? {
-            avgFps: +(sum / n).toFixed(1),
-            minFps: +min.toFixed(1),
-            worstMs: +worst.toFixed(0)
-          } : {avgFps: 0, minFps: 0, worstMs: 0};
-          autoLine.textContent = 'AUTO готово: avg ' + stats.avgFps + ' | min ' + stats.minFps + ' | worst ' + stats.worstMs + 'ms';
-          console.log('AUTO pan-stress results:', JSON.stringify(stats));
-          window.__autoResults = stats;
-        }
-        hop();
-      }
-
-      DK.map.whenReady(function () { setTimeout(runStress, 1000); });
-    }
-  }
 })();

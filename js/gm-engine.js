@@ -1,10 +1,8 @@
-// Ф3.5а: GM-слой (разлочка) для Leaflet-движка (?engine=leaflet). Расшифровывает gmText
+// Ф3.5а: GM-слой (разлочка) Leaflet-движка. Расшифровывает gmText
 // зон/маркеров паролем мастера — ключ живёт ТОЛЬКО в памяти вкладки (в этом замыкании),
-// никогда не пишется в localStorage/IndexedDB/консоль. Только эта ветка бутстрапа —
-// app.js (v1, редактор + свой GM-слой) не трогается.
+// никогда не пишется в localStorage/IndexedDB/консоль.
 //
-// UI переиспользует разметку #masterBtn/#masterModal из index.html (общая с v1, но v1 её
-// не грузит на ветке ?engine=leaflet — конфликта обработчиков нет).
+// UI переиспользует разметку #masterBtn/#masterModal из index.html.
 //
 // Ф3.5б: read-панель в #side (renderPanel/itemBlock) УДАЛЕНА — её заменяет форма
 // редактора в js/editor-engine.js (показывает playerText+gmText при выборе объекта И
@@ -126,9 +124,8 @@
   /* ---------- модалка мастера (переиспользует #masterBtn/#masterModal из index.html) ---------- */
   var masterBtn, modal, pwEl, pwConfirmEl, errEl, titleEl, descEl, okBtn, cancelBtn, modePill;
 
-  // Смежный фикс: modePill — общий с v1 элемент шапки; app.js держит его в синхроне со
-  // своим EDIT-режимом, но на ветке ?engine=leaflet app.js не грузится вовсе, так что без
-  // этого пилюля осталась бы навсегда «Карта кампании», даже после разлочки GM.
+  // modePill — элемент шапки; без явной синхронизации тут пилюля осталась бы навсегда
+  // «Карта кампании», даже после разлочки GM.
   function setMasterBtn() {
     if (masterBtn) masterBtn.textContent = gmKey ? 'Запереть GM' : 'Мастер';
     if (modePill) {

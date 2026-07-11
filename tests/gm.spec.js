@@ -1,4 +1,4 @@
-// Ф3.5а: E2E для GM-слоя (?engine=leaflet). Ничего не трогает боевые data/v3/*.json —
+// Ф3.5а: E2E для GM-слоя. Ничего не трогает боевые data/v3/*.json —
 // все три сценария идут через tests/fixtures/gm-{fixture,empty}-*.json (?gmfixture=...),
 // с тестовым паролем (не боевым, см. tests/fixtures/*.json — сгенерированы отдельно).
 // Проверяем и DOM (что реально видит GM), и window.DKGM (состояние без хардкода текстов
@@ -66,7 +66,7 @@ async function assertVisiblyAboveLeaflet(page, selector) {
       leafletElCount: leafletEls.length,
     };
   }, selector);
-  expect(z.leafletElCount, 'ожидались Leaflet-паны в DOM (?engine=leaflet)').toBeGreaterThan(0);
+  expect(z.leafletElCount, 'ожидались Leaflet-паны в DOM').toBeGreaterThan(0);
   expect(z.stackingElDesc, `${selector} и все его предки — position:static; z-index нигде не действует, #map всегда рисуется поверх`)
     .not.toBeNull();
   expect(z.zIndex, `${selector} защищён стекингом от ${z.stackingElDesc} (z=${z.zIndex}) — должен быть выше Leaflet-панов (max z=${z.maxLeafletZ})`)
@@ -84,7 +84,7 @@ async function assertPanelVisiblyOpen(page) {
 
 test.describe('E2E: GM-слой (Ф3.5а gm-engine.js)', () => {
   test('a) неверный пароль — внятная ошибка, ничего не разлочено', async ({ page }) => {
-    await page.goto('/?engine=leaflet&gmfixture=1', { waitUntil: 'load' });
+    await page.goto('/?gmfixture=1', { waitUntil: 'load' });
     await page.waitForFunction(() => !!window.DKGM);
 
     await page.click('#masterBtn');
@@ -111,7 +111,7 @@ test.describe('E2E: GM-слой (Ф3.5а gm-engine.js)', () => {
     // редактора (js/editor-engine.js), показывающая playerText+gmText при выборе
     // объекта на карте. #side остаётся тем же элементом, assertPanelVisiblyOpen всё ещё
     // релевантен (это по-прежнему тот самый бывший баг #2 — только контент другой).
-    await page.goto('/?engine=leaflet&gmfixture=1', { waitUntil: 'load' });
+    await page.goto('/?gmfixture=1', { waitUntil: 'load' });
     await page.waitForFunction(() => !!window.DKGM && !!window.DKEditor);
 
     await page.click('#masterBtn');
@@ -147,7 +147,7 @@ test.describe('E2E: GM-слой (Ф3.5а gm-engine.js)', () => {
   });
 
   test('c) Фикс (а): 0 enc-блоков — явный флоу "задать пароль", не тихий unlock', async ({ page }) => {
-    await page.goto('/?engine=leaflet&gmfixture=empty', { waitUntil: 'load' });
+    await page.goto('/?gmfixture=empty', { waitUntil: 'load' });
     await page.waitForFunction(() => !!window.DKGM && !!window.DKEditor);
 
     await page.click('#masterBtn');
@@ -185,7 +185,7 @@ test.describe('E2E: GM-слой (Ф3.5а gm-engine.js)', () => {
     // форму редактора (см. тест b), а не через попап. Этот тест держит то, что ДЕЙСТВИТЕЛЬНО
     // осталось инвариантом: до разлочки попап игрока никогда не содержит GM-блок, и после
     // разлочки read-слой (с его попапами) не видим на карте вовсе — его место занял редактор.
-    await page.goto('/?engine=leaflet&gmfixture=empty', { waitUntil: 'load' });
+    await page.goto('/?gmfixture=empty', { waitUntil: 'load' });
     await page.waitForFunction(() => !!window.DKGM && !!window.DKEditor);
     await page.waitForSelector('.dk-marker[data-marker-id="embervud"]');
 
