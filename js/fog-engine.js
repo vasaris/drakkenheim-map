@@ -31,26 +31,6 @@
     return e;
   }
 
-  // Ф3.6-fix (инцидент: рваные полосы по кромке листа на низких зумах): подложка
-  // тумана считается НЕ по MASTER_SIZE (честный контент), а по WORLD_PX. Причина —
-  // внешний тайлер (maphost) округляет число тайлов на КАЖДОМ зуме отдельно (ceil) и
-  // на низких зумах это даёт оверхэнг: z0 — всего 1 тайл, отдаёт ВЕСЬ мастер разом,
-  // но в пересчёте на нативные пиксели (по формуле CRS.Simple scale(z)=2^z) тайл-сетка
-  // на этом зуме визуально занимает TILE_SIZE*2^NATIVE_Z (8192 при MASTER_SIZE=5000),
-  // ЗАМЕТНО больше честного контента. Подложка размером ровно MASTER_SIZE не достаёт
-  // до правого/нижнего края тайла на этих зумах — там сквозь дыру виден необработанный
-  // тайл (лес/застройка без тумана). WORLD_PX — верхняя граница этого оверхэнга на ЛЮБОМ
-  // зуме (честный z3-z5 и так укладывается в неё с запасом) — подложка гарантированно
-  // достаёт до края тайл-сетки везде. Вырезы зон (normPointToSvg — project/normToLatLng)
-  // не зависят от размера подложки и не тронуты; лишний край подложки за MASTER_SIZE —
-  // просто чуть больше плотного тумана поверх фонового void, а не дыра.
-  var TILE_SIZE = DK.TILE_SIZE || 256;
-  var WORLD_PX = TILE_SIZE * Math.pow(2, DK.NATIVE_Z);
-  var worldBounds = L.latLngBounds(
-    DK.map.unproject([0, 0], DK.NATIVE_Z),
-    DK.map.unproject([WORLD_PX, WORLD_PX], DK.NATIVE_Z)
-  );
-
   // Норм-координаты выреза -> SVG-пиксели оверлея. Единственный переход — через
   // normToLatLng (map-engine.js) + map.project на NATIVE_Z; своих IMG_W/IMG_H тут не используем.
   function normPointToSvg(nx, ny) {
@@ -67,7 +47,7 @@
     '@media (prefers-reduced-motion:reduce){.leaf-fog-anim .leaf-fog-rect{animation:none;opacity:.96;}}';
   document.head.appendChild(style);
 
-  var svg = el('svg', {viewBox: '0 0 ' + WORLD_PX + ' ' + WORLD_PX, 'class': 'leaf-fog-anim'});
+  var svg = el('svg', {viewBox: '0 0 ' + DK.IMG_W + ' ' + DK.IMG_H, 'class': 'leaf-fog-anim'});
 
   var defs = el('defs');
   var feather = el('filter', {
@@ -79,18 +59,18 @@
 
   var mask = el('mask', {id: 'leafFogMask'});
   var maskG = el('g', {id: 'leafFogMaskG', filter: 'url(#leafHazeFeather)'});
-  maskG.appendChild(el('rect', {x: 0, y: 0, width: WORLD_PX, height: WORLD_PX, fill: FOG_HEX.hidden}));
+  maskG.appendChild(el('rect', {x: 0, y: 0, width: DK.IMG_W, height: DK.IMG_H, fill: FOG_HEX.hidden}));
   mask.appendChild(maskG);
   defs.appendChild(mask);
   svg.appendChild(defs);
 
   var fogRect = el('rect', {
-    'class': 'leaf-fog-rect', width: WORLD_PX, height: WORLD_PX, fill: '#5e4488',
+    'class': 'leaf-fog-rect', width: DK.IMG_W, height: DK.IMG_H, fill: '#5e4488',
     mask: 'url(#leafFogMask)', 'pointer-events': 'none'
   });
   svg.appendChild(fogRect);
 
-  L.svgOverlay(svg, worldBounds, {interactive: false, pane: 'overlayPane'}).addTo(DK.map);
+  L.svgOverlay(svg, DK.bounds, {interactive: false, pane: 'overlayPane'}).addTo(DK.map);
 
   // Ф3.5б: живой хук для js/editor-engine.js — статус зоны должен «немедленно отражаться
   // в тумане» (решение по спорному 2: Дымка остаётся видимой и во время редактирования,
