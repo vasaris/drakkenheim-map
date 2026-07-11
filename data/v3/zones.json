@@ -1,0 +1,478 @@
+{
+  "schema": "dk-map/v3",
+  "mapOrientation": "v3",
+  "items": [
+    {
+      "id": "outskirts",
+      "name": "Окрестности · делериум-поля",
+      "band": "1–3",
+      "owner": "[TBD]",
+      "status": "known",
+      "playerText": "Дороги, поля и руины предместий. Здесь начинаются первые вылазки и охота за делериумом.",
+      "gmText": {
+        "enc": true,
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "p3RSk44ogPkL88fG",
+        "ct": "Vi2fbEnKWzioDAqSo+9Mk9pPIG7nqmJiQAnroxnHzSpY8+w8FELSH+F8nB9VUpWC3usOt9EcRB27chaA7iCaCNHVztrVkaiNmcBJmkuFBPblBqTfISDEot+nsGaP3l/klmHOCidnabIyc56oi4vPmkkFt30fzG8jCsz7i3SmLDCtF8AoxizuMQRfJ0tUlLrZ8YfjWkRgh3wlpDrynsZE2w6eh6cfE3F5Uf5XlHoP7UNLA8zKCrMEUA/OMHZ91bQVYly/g7L+Vnv5HjLIuhmpDh6n/gO2RpN1sQYT/qHYWCDOzMJO"
+      },
+      "polygon": [
+        [
+          0.8123905378530984,
+          0.004319436597443222
+        ],
+        [
+          0.8125238801620064,
+          0.9799896599468024
+        ],
+        [
+          0.18780170417118305,
+          0.9800231907416003
+        ],
+        [
+          0.18766836186227512,
+          0.0043529673922410765
+        ],
+        [
+          0.8123905378530984,
+          0.004319436597443222
+        ],
+        [
+          0.780525712243463,
+          0.06838030343077314
+        ],
+        [
+          0.2259254131495688,
+          0.06841007056493043
+        ],
+        [
+          0.22603047072628416,
+          0.8371199435068496
+        ],
+        [
+          0.7806307698201784,
+          0.8370901763726925
+        ],
+        [
+          0.780525712243463,
+          0.06838030343077314
+        ]
+      ]
+    },
+    {
+      "id": "kingside",
+      "name": "Кингсайд",
+      "band": "3–6",
+      "owner": "[TBD]",
+      "status": "hidden",
+      "playerText": "Усадьбы и виноградники Внешнего Города у Королевской дороги, за рекой — северо-западная окраина. Дома стоят пустыми.",
+      "gmText": {
+        "enc": true,
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "breIpOKBGhBdVE3n",
+        "ct": "ZCQ633GUzI/2QXRFA2bNP2gq1y+zfG+E4ibN1Tq2fhgDVcduc8Ycz8VOiNlXwxdXCw/OovagHG9R7SYGjzD83mslBx+8D2uFwIWMhTZpvOZjp5lzI0IljXghcpIcbjf8LzsgezZrINVyL/MB5t+mc1uG+FCl1ZQY82N+RV5Sqv846Tnmle1es8cq1ecpLipc6YMPn61GeB9Jm/03f3Kpur55nMqniijmIj4ImJ8YiQO28xrU2vshjQk/YeFKLxKenmJjcb8bMlLFG5sGw+Cw4IJdWuqJw1umUys3Qe6eN2M="
+      },
+      "polygon": [
+        [
+          0.7868977345409837,
+          0.04866945171719248
+        ],
+        [
+          0.8060420861657382,
+          0.19649724698389037
+        ],
+        [
+          0.7614311956230476,
+          0.28519693507242155
+        ],
+        [
+          0.6976799941316301,
+          0.2556345922381748
+        ],
+        [
+          0.6912864215619626,
+          0.11766136745084896
+        ],
+        [
+          0.7422733750782013,
+          0.0388165919926571
+        ]
+      ]
+    },
+    {
+      "id": "sprawl",
+      "name": "Растяжение",
+      "band": "3–6",
+      "owner": "[TBD]",
+      "status": "hidden",
+      "playerText": "Южная окраина за стенами: тесные улочки, рынки, бывшие таверны. Раньше — самый людный район.",
+      "gmText": {
+        "enc": true,
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "ao2/bzv5xs6rcf9m",
+        "ct": "k3zVBMJUIDAUGKMjHv1yxiBpQjBuaVsspw+xmnZ835jqypsJ/DINy0MKZ7LDd6V6aPgN3ZIB6tq9OaygdbZRs2kV3G73tk0pw/Sg7y+OIi1kWx/o1itkbTVCkHu7cpvycDJW2QCbB7GifoPpgKvjbFveuq7SMkLpf3ExQpv0RQ7D/8xKP2Sr0hIyWuZlI99RpJEBP1y4yIWnpV3fsVpG62Fh/eXEsX4ByjVaz7g3PlgWPLi0fxI="
+      },
+      "polygon": [
+        [
+          0.29607018721065387,
+          0.235945638186503
+        ],
+        [
+          0.31522262018746344,
+          0.44290496214104086
+        ],
+        [
+          0.30887618883811707,
+          0.649865654699448
+        ],
+        [
+          0.27064136126897476,
+          0.7484202554183186
+        ],
+        [
+          0.21325140693900438,
+          0.620305022620038
+        ],
+        [
+          0.21321234707073844,
+          0.3345026339621448
+        ],
+        [
+          0.2578165031533831,
+          0.19652667196708032
+        ]
+      ]
+    },
+    {
+      "id": "spokes",
+      "name": "Спицы",
+      "band": "3–6",
+      "owner": "[TBD]",
+      "status": "hidden",
+      "playerText": "Промзона северо-восточнее Кратера, вдоль Champion's Way — разрушена сильнее всего. Воздух забит пылью и Дымкой.",
+      "gmText": {
+        "enc": true,
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "tMI2oqHFbKR3m4zo",
+        "ct": "XOy/dJkm4z+WIa3marO6doAveyHtNfvykGfT8m5mmGq6TKCSR9AyLU/k0VqTFWcH609LvG8pB3ndoKBwCBxObk1QutWgGgi7QAf4NbFU9fDPyW93nvdQMUKYhNiHgSy81sjVu1r76X350pAc4jYyQQJ8BIM4CDcYiBGCJNqby46aHkwmg3goeGY9gM+pisdH22jHAIAAoEFMsiHAJqiKbOuavvSGiyzmXvY36N0KVPx1h+vmDIiZJX34CJ/BxhqeBderA577puTxDzGnnQa3COaYWAP8EXxWhBZH"
+      },
+      "polygon": [
+        [
+          0.7104718533929969,
+          0.5660744335474
+        ],
+        [
+          0.7614837244114053,
+          0.6695518715433812
+        ],
+        [
+          0.7423757388708984,
+          0.787815955371963
+        ],
+        [
+          0.6531324075133706,
+          0.807531255048119
+        ],
+        [
+          0.6084945791304964,
+          0.699125847510517
+        ],
+        [
+          0.6212271751434599,
+          0.5759344784422491
+        ]
+      ]
+    },
+    {
+      "id": "middle_ward",
+      "name": "Средний Квартал",
+      "band": "6–10",
+      "owner": "[TBD]",
+      "status": "hidden",
+      "playerText": "Крупнейший район внутреннего города. На границе — Рыночная площадь, где сходятся дороги.",
+      "gmText": {
+        "enc": true,
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "xflfhViEyvRT9DsP",
+        "ct": "vqG1GY3VbQ/U9zoAiKtiodigV+VfafTJT/W90w1m5ae+mtwnG5HZmPy8gMqHXMopvyYxvshLrBCaBSEYXPpHBbVt1JJZ1fKu8hnZiQcdgg/fpHC7OkhkTGqc1Q=="
+      },
+      "polygon": [
+        [
+          0.4458881371549032,
+          0.3246348906705308
+        ],
+        [
+          0.4586537320220913,
+          0.44289726374427607
+        ],
+        [
+          0.39809662303148896,
+          0.4626110237410789
+        ],
+        [
+          0.3152212732954543,
+          0.4330497073597342
+        ],
+        [
+          0.3152037636993351,
+          0.30493139520274765
+        ],
+        [
+          0.38532159992023673,
+          0.27536186719818717
+        ]
+      ]
+    },
+    {
+      "id": "old_town",
+      "name": "Старый Город",
+      "band": "6–10",
+      "owner": "[TBD]",
+      "status": "hidden",
+      "playerText": "Запад у скал Замка Драккен — самая уцелевшая часть. Усадьба Кляйнберг.",
+      "gmText": {
+        "enc": true,
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "M20Lh6alARZytNA2",
+        "ct": "j6sUomBl6ppszSC9hpVtsuUinxphb2rdSdz58/fsagByNMeEq+SkwrMR1NukrtuNOyeMdQ2rSSNX1I8lpJlSL/GXmeJud/zkxOP+cxy97mrYX7TI+cHXoOzSr28BDH9YGpJDHf5d+u2Fvqzb5yZBsNKcRhEc/wiM6iIzviz/uvtdu4E/cZT94VKeaTf+/mAfq5gpS/yK3m5GrcBy749nbjl/9Ip/k1AX9JD9pVj9/nOgF3XzMOGnQ1LDKfyZVU1n5VNK9dIEmGSEKCmhYMgIPgCDpDo+HA8="
+      },
+      "polygon": [
+        [
+          0.4987877479361653,
+          0.2475639584276839
+        ],
+        [
+          0.5359569760000493,
+          0.28146404013523935
+        ],
+        [
+          0.5651540241954637,
+          0.28767128359603217
+        ],
+        [
+          0.5911008022623391,
+          0.29998895951822846
+        ],
+        [
+          0.6088883208746069,
+          0.31506654473242884
+        ],
+        [
+          0.622532637694717,
+          0.3328052711357107
+        ],
+        [
+          0.619795617800283,
+          0.362863945343612
+        ],
+        [
+          0.5965944527988601,
+          0.3833641207182509
+        ],
+        [
+          0.5638289778343935,
+          0.38750508638237174
+        ],
+        [
+          0.5405610755718948,
+          0.3861265995640196
+        ],
+        [
+          0.5091937280909373,
+          0.35873067465474623
+        ],
+        [
+          0.47419225368669904,
+          0.3273928428590017
+        ],
+        [
+          0.4731021946225541,
+          0.28087609845689876
+        ]
+      ]
+    },
+    {
+      "id": "temple_ward",
+      "name": "Храмовый Квартал",
+      "band": "6–10",
+      "owner": "[TBD]",
+      "status": "hidden",
+      "playerText": "Южный внутренний квартал у Храмовых Ворот (Temple Gate). Доминанта — Собор Святого Витрувио.",
+      "gmText": {
+        "enc": true,
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "1bx4Vt1MA33craaC",
+        "ct": "XznCZQU+o/r3xb5Eer+Su3YadUxk0jjSJ818xSi03tvpMr+ybUgnm7410xJavL88K7PNtZlo36a3WJl3kp61kC5AgOOCLUqnlwr9oeSBfCr+sYoMcZD5FQAiJGr1+AUEbHNjsbPTr5/hrvTxoNDVh4eAzpP4TJGuug=="
+      },
+      "polygon": [
+        [
+          0.45227766904854316,
+          0.43304235111393674
+        ],
+        [
+          0.45229585209066697,
+          0.5660882906615766
+        ],
+        [
+          0.39811278573559905,
+          0.5808740811167588
+        ],
+        [
+          0.34710966951525024,
+          0.5414557991992709
+        ],
+        [
+          0.34709754748716776,
+          0.45275850616751095
+        ],
+        [
+          0.4044646046529821,
+          0.4133344076835783
+        ]
+      ]
+    },
+    {
+      "id": "south_ward",
+      "name": "Южный Квартал",
+      "band": "6–10",
+      "owner": "[TBD]",
+      "status": "hidden",
+      "playerText": "Тлеющие руины у южной кромки Кратера. Здесь Площадь Резни; за ней Дымка сгущается над воронкой.",
+      "gmText": {
+        "enc": true,
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "8oeHmO2Hv19jms2/",
+        "ct": "vURg0CSQFyVH3f02mznXMx6W2wu3emSkHFijaZnY6nkAHCL/ygZkx1u7VEUBTo3aCyGfzf6ILwX6ETQwfCwZSReFgukniBGSWE4SPBmp+qTKX0efFEcsoTxozJfO/EP5X5iecCLQFY/v4S8rBbtCGlmVUneb2xYYHt7/5Kyq5OzwQTtKti6ikYLB5QdDUsMVcTi8HEOi/6/zAZjhnaeHfbQ8/pmnHLMxozEtPFhVg5hXcir4Mf/uJk0Q1k+P3MsDRDJ3hCZa2WOD8jUTTP/sxM0="
+      },
+      "polygon": [
+        [
+          0.5829593487200928,
+          0.43303533701910657
+        ],
+        [
+          0.5829782052082212,
+          0.5710089039573997
+        ],
+        [
+          0.5319845172319367,
+          0.6005774055090582
+        ],
+        [
+          0.4873561170931269,
+          0.5611587814406028
+        ],
+        [
+          0.48734130128102604,
+          0.4527509788462297
+        ],
+        [
+          0.5319602731757717,
+          0.4231828194455385
+        ]
+      ]
+    },
+    {
+      "id": "core",
+      "name": "Кратер",
+      "band": "10–13",
+      "owner": "GM-команда",
+      "status": "hidden",
+      "playerText": "Сердце катастрофы под глубокой Дымкой. Туда не ходят без поддержки фракций.",
+      "gmText": {
+        "enc": true,
+        "v": 2,
+        "salt": "pcER8gG+20G7F8yrKsWMHg==",
+        "iv": "afXPhCsi7Axz0tkp",
+        "ct": "YSskUA82DPRkJy86znczT9X+srlMInM8BjeD/rysr8WKBbAiPjnooK8U6xXDo2xgDeolw8NjHOhmIBskcAx6ANw59aKuA94we/XCI1QlZDoptrs9+QL4Ed4F2XBKqKN2RAiz9FWD5oKgJuksnw/to0sMw7GVcdXGjDcUVKquYRf0Pq2088+wk6n5ibrZe7dAnGGbD4GYg/hoJqzDQ1/shMYdX3l/zZgbjsPdr3GtmlKbQakJiYu2zRqeY4oDp33+cN1kYvFW8oLmzY1W"
+      },
+      "polygon": [
+        [
+          0.6594586354825794,
+          0.4527417407701119
+        ],
+        [
+          0.659470757510662,
+          0.5414390338018719
+        ],
+        [
+          0.6212271751434599,
+          0.5759344784422491
+        ],
+        [
+          0.5829741645321938,
+          0.5414431396134798
+        ],
+        [
+          0.5829620425041112,
+          0.4527458465817199
+        ],
+        [
+          0.6212062983173178,
+          0.4231780293319959
+        ]
+      ]
+    },
+    {
+      "id": "z1783724221515-eubljp",
+      "name": "Замок Драккен",
+      "band": "10+",
+      "owner": "[TBD]",
+      "status": "hidden",
+      "playerText": "Крепость на скальном плато над городом — трон павшей династии фон Драккен. Стены ещё стоят, но то, что бродит внутри них, не кланяется никому.",
+      "gmText": "",
+      "polygon": [
+        [
+          0.5671773396320032,
+          0.16625443520202463
+        ],
+        [
+          0.5849653161875542,
+          0.18468280704186923
+        ],
+        [
+          0.595865057049059,
+          0.17719222832992204
+        ],
+        [
+          0.6074666631876975,
+          0.17443213427639565
+        ],
+        [
+          0.6102088147406862,
+          0.18192198078527275
+        ],
+        [
+          0.6013497372847991,
+          0.1949313926864421
+        ],
+        [
+          0.5849696127730636,
+          0.21612106979423742
+        ],
+        [
+          0.562404235764783,
+          0.22430214247714625
+        ],
+        [
+          0.5283001647056338,
+          0.22913304782766178
+        ],
+        [
+          0.5009508548183793,
+          0.2161255793439868
+        ],
+        [
+          0.5118475112971831,
+          0.18606646718284736
+        ]
+      ]
+    }
+  ]
+}

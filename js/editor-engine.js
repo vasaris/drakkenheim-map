@@ -3,9 +3,9 @@
 // app.js НЕ трогается (умрёт в Ф3.6) — это параллельная, самостоятельная реализация.
 //
 // Доступен ТОЛЬКО в разлоченном Мастер-режиме (см. window.DKGM.onChange ниже) — отдельного
-// ?edit=1 на этой ветке нет. Данные сразу в v2-формате (schema/mapOrientation/items),
+// ?edit=1 на этой ветке нет. Данные сразу в v3-формате (schema/mapOrientation/items),
 // без миграций. Черновик — localStorage (ключи ниже), «экспорт» отдаёт готовые
-// data/v2/{zones,markers}.json файлы для ручного коммита — пайплайн деплоя не меняется.
+// data/v3/{zones,markers}.json файлы для ручного коммита — пайплайн деплоя не меняется.
 //
 // Решения по спорным местам плана (чат, все — «ок»):
 //  1) gmText шифруется НА КАЖДОЕ сохранение (debounce), не только на экспорт как в v1 —
@@ -35,8 +35,8 @@
   var MARKER_COLOR = { location: '#c9a85f', faction: '#5b76b8', danger: '#c5453f', secret: '#b06ae0', hub: '#5fae74' };
   var TYPE_LABEL = { location: 'Локация', faction: 'Фракция', danger: 'Опасность', secret: 'Секрет', hub: 'Хаб' };
 
-  var LS_WORK = 'dk_work_v2';           // {zones:[...], markers:[...]} — черновик, v2-shape items
-  var LS_BASELINE = 'dk_work_v2_baseline'; // {zones:[...], markers:[...]} — снимок live-данных на момент черновика
+  var LS_WORK = 'dk_work_v3';           // {zones:[...], markers:[...]} — черновик, v3-shape items
+  var LS_BASELINE = 'dk_work_v3_baseline'; // {zones:[...], markers:[...]} — снимок live-данных на момент черновика
 
   // ?gmfixture=1 / =empty — те же фикстуры, что у gm-engine.js (см. tests/gm.spec.js);
   // отдельных editor-фикстур не заводим, формат v2-документа одинаковый для обеих целей.
@@ -45,11 +45,11 @@
   var ZONES_URL = fx === 'empty' ? 'tests/fixtures/gm-empty-zones.json'
     : fx === 'lifecycle' ? 'tests/fixtures/lifecycle-zones.json'
     : fx ? 'tests/fixtures/gm-fixture-zones.json'
-    : 'data/v2/zones.json';
+    : 'data/v3/zones.json';
   var MARKERS_URL = fx === 'empty' ? 'tests/fixtures/gm-empty-markers.json'
     : fx === 'lifecycle' ? 'tests/fixtures/lifecycle-markers.json'
     : fx ? 'tests/fixtures/gm-fixture-markers.json'
-    : 'data/v2/markers.json';
+    : 'data/v3/markers.json';
 
   var zones = [], markers = [];
   var sel = null;            // {kind:'zone'|'marker', id}
@@ -96,7 +96,7 @@
   }
 
   // Живая приёмка: подпись outskirts (зона-кольцо: внешний контур + обратный внутренний,
-  // fill-rule=evenodd — см. data/v2/zones.json) висела в дырке кольца, посреди чужих
+  // fill-rule=evenodd — см. data/v3/zones.json) висела в дырке кольца, посреди чужих
   // районов — среднее вершин (центроид) лежит вне полигона у невыпуклых/кольцевых форм.
   // distToPolyEdges/labelAnchor — грубый однопроходный аналог "визуального центра"
   // (то же, что решает Mapbox polylabel, без его quadtree-уточнения — точности сетки
@@ -127,12 +127,12 @@
   // уходит в сторону ближайшего края листа и режется там же, где сам якорь и так у кромки
   // (живая приёмка: именно так резался outskirts). Для пристеночных якорей текст вешаем
   // ОТ края внутрь листа (ближе edge слева -> текст растёт вправо, и т.д.), а не поровну.
-  // Расстояния переводим в реальные пиксели листа (DK.IMG_W/IMG_H) — лист книжный
-  // (портрет, выше чем шире), поэтому сырое сравнение нормализованных x/y вводит в
-  // заблуждение: маленькая нормализованная разница по Y может означать бОльшее реальное
-  // расстояние, чем по X, и наоборот. 'top'/'bottom' у Leaflet двигают текст только по
-  // вертикали — если реально прижимает по горизонтали (частый случай на портретном листе),
-  // такой выбор направления вообще не помогает (поймано на живом outskirts).
+  // Расстояния переводим в реальные пиксели листа (DK.IMG_W/IMG_H) — на v2 (книжный
+  // портрет, выше чем шире) сырое сравнение нормализованных x/y вводило в заблуждение:
+  // маленькая нормализованная разница по Y могла означать бОльшее реальное расстояние,
+  // чем по X, и наоборот. Ф3.5в: мир v3 квадратный (IMG_W===IMG_H) — искажение ушло, но
+  // код оставлен как есть (без него не отличить top/bottom прижим от left/right, а именно
+  // в этом ошибка была поймана на живом outskirts, см. историю).
   function edgeAwayDirection(x, y) {
     var dLeft = x * DK.IMG_W, dRight = (1 - x) * DK.IMG_W;
     var dTop = y * DK.IMG_H, dBottom = (1 - y) * DK.IMG_H;
@@ -321,7 +321,10 @@
   // от SVG-полигонов) — держим отдельную CSS-переменную размера подписи, пересчитываем
   // на zoomend. Диапазон подобран эмпирически по скриншотам на дефолтном виде «в размер»
   // (обычно zoom 1-3 для книжного разворота): 8px — нижний предел читаемости, 13px —
-  // близко к исходным 12px на большом приближении. NATIVE_Z=5, maxZoom=7 (map-engine.js).
+  // близко к исходным 12px на большом приближении. Диапазон эмпирический — подобран на
+  // v2 книжном развороте (NATIVE_Z=5, maxZoom=7 на тот момент); NATIVE_Z/maxZoom теперь
+  // выводятся из MASTER_SIZE (map-engine.js) и меняются при переключении мастера v3 на
+  // финальное разрешение — перепроверить визуально на живом виде, когда апскейл готов.
   function updateLabelSize() {
     var zoom = DK.map.getZoom();
     var size = Math.round(Math.min(13, Math.max(8, 7 + zoom)));
@@ -589,7 +592,7 @@
 
   /* ---------- экспорт (данные уже несут корректно зашифрованный gmText — шифруем при
      сохранении, не при экспорте, см. решение по спорному 1; повторного прохода не нужно) ---------- */
-  function wrapDoc(items) { return { schema: 'dk-map/v2', mapOrientation: 'v2', items: items }; }
+  function wrapDoc(items) { return { schema: 'dk-map/v3', mapOrientation: 'v3', items: items }; }
   function download(name, content) {
     var b = new Blob([content], { type: 'application/json' });
     var u = URL.createObjectURL(b);

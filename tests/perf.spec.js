@@ -28,7 +28,7 @@ const HOP_POINTS_NORM = [
 const TARGETS = [
   {
     key: 'prod',
-    label: 'прод :8032 (Ф3.3 fog-engine, tiles_v2 книжный разворот)',
+    label: 'прод :8032 (Ф3.3 fog-engine, tiles_v3 квадратный русский мастер)',
     url: 'http://localhost:8032/?engine=leaflet',
     hazezoneSelector: '#map svg .leaf-hazezone',
     ready: (page) => page.waitForFunction(() => !!(
@@ -188,12 +188,20 @@ test.describe('perf @perf: прод vs стенд (CDP frame tracing, headed)', 
     const dir = path.join(__dirname, '..', 'artifacts');
     fs.mkdirSync(dir, { recursive: true });
 
-    const zoom = 5; // NATIVE_Z для обоих движков — полное разрешение тайлов
+    // Ф3.5в: NATIVE_Z прод выведен из MASTER_SIZE (map-engine.js) и меняется при
+    // переключении мастера v3 на финальное разрешение — раньше был фиксированный
+    // литерал 5, совпадавший с обоими движками случайно. Стенд (dk-spike) — заморожен,
+    // свой z5 не меняется никогда; прод читает live свой собственный NATIVE_Z. Разные
+    // зумы для разных таргетов не портят сравнение: цель скриншотов — визуальная сверка
+    // фетеринга КАЖДОГО движка на СВОЁМ полном разрешении тайлов, не попиксельный diff.
     for (const target of TARGETS) {
       const page = await context.newPage();
       await page.setViewportSize({ width: 1000, height: 800 });
       await page.goto(target.url, { waitUntil: 'load' });
       await target.ready(page);
+      const zoom = target.key === 'prod'
+        ? await page.evaluate(() => window.DKMapEngine.NATIVE_Z)
+        : 5; // стенд dk-spike — заморожен, свой NATIVE_Z всегда 5
 
       // Внутренняя точка, не край карты: перебираем КАЖДОЕ ребро КАЖДОГО выреза и берём
       // то, чья середина ближе всего к центру изображения (0.5,0.5 норм.). "Центроид

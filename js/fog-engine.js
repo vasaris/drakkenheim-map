@@ -4,10 +4,11 @@
 // Механизм и параметры — портированы из стенда ~/Downloads/dk-spike (вердикт B,
 // зафиксировано, не обсуждается):
 //   - SVG-оверлей (L.svgOverlay), маска «тьма с вырезами», feGaussianBlur по краям;
-//   - stdDeviation см. FEATHER_STD ниже — литерал стенда (5100/145 ≈ 35.17); прод-движок
-//     тайлит книжный разворот portrait (IMG_W=3300, IMG_H=5100), стенд — landscape
-//     (5100x3300), поэтому формула IMG_W/145 от прод-ширины дала бы другое число —
-//     берём готовое значение стенда как есть, не пересчитываем;
+//   - stdDeviation см. FEATHER_STD ниже — формула стенда (world_max/145), где world_max —
+//     сторона мастера. v2 (книжный разворот, IMG_W=3300≠IMG_H=5100) не мог применить эту
+//     формулу к прод-ширине буквально (стенд landscape 5100x3300 давал другое число) —
+//     держали литерал 5100/145. Ф3.5в: мир v3 КВАДРАТНЫЙ (MASTER_SIZE=IMG_W=IMG_H) —
+//     формула снова применима как есть, без литерала;
 //   - breathe-анимация 17s, reveal-transition (смена fill выреза) 1.1s;
 //   - feTurbulence/grain НЕ добавляется вовсе — даже отключённым, мёртвый фильтр в DOM
 //     стоит памяти iOS-композитора (см. dk-spike ?grain=0 сравнение).
@@ -21,7 +22,7 @@
     return;
   }
 
-  var FEATHER_STD = 5100 / 145; // ≈35.17, литерал стенда dk-spike — см. комментарий в шапке файла
+  var FEATHER_STD = DK.MASTER_SIZE / 145; // формула стенда dk-spike — см. комментарий в шапке файла
   var FOG_HEX = {hidden: '#ebebeb', known: '#6b6b6b', scouted: '#262626', explored: '#000000'};
 
   var SVGNS = 'http://www.w3.org/2000/svg';
@@ -98,11 +99,11 @@
 
   var Q = new URLSearchParams(location.search);
 
-  // Ф3.4: реальные зоны из data/v2/zones.json (мигрированные книжные координаты).
-  // Загрузка асинхронная — вырезы появляются в маске чуть позже, чем сам оверлей
+  // Ф3.5в: реальные зоны из data/v3/zones.json (мигрированные на русский квадратный
+  // мастер). Загрузка асинхронная — вырезы появляются в маске чуть позже, чем сам оверлей
   // монтируется на карту; это ожидаемо (см. tests/correctness.spec.js, ждёт
   // .leaf-hazezone явно, а не полагается на синхронность).
-  fetch('data/v2/zones.json', {cache: 'no-store'})
+  fetch('data/v3/zones.json', {cache: 'no-store'})
     .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); })
     .then(function (data) {
       var zones = (data && data.items) || [];
@@ -114,7 +115,7 @@
           fill: FOG_HEX[z.status] || FOG_HEX.hidden
         }));
       });
-      console.log('fog-engine: overlay attached, ' + zones.length + ' zones (data/v2/zones.json)');
+      console.log('fog-engine: overlay attached, ' + zones.length + ' zones (data/v3/zones.json)');
 
       // ---- временный демо-хук reveal (?fogdemo=1) — TEMP, убрать в Ф3.6 вместе с ?fps=1 HUD.
       // Целевая зона — первая со status=known на момент загрузки (сейчас это 'outskirts'),
@@ -135,7 +136,7 @@
       }
     })
     .catch(function (err) {
-      console.error('fog-engine: не удалось загрузить data/v2/zones.json', err);
+      console.error('fog-engine: не удалось загрузить data/v3/zones.json', err);
     });
 
   // ---- временный FPS-HUD (?fps=1[&auto=1]) — TEMP, убрать в Ф3.6 вместе с ?fogdemo=1.

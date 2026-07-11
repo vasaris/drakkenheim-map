@@ -1,5 +1,5 @@
-// Ф3.4: слой маркеров для Leaflet-движка (?engine=leaflet), реальные данные
-// из data/v2/markers.json. Только эта ветка бутстрапа — app.js (v1) не трогается.
+// Ф3.4/Ф3.5в: слой маркеров для Leaflet-движка (?engine=leaflet), реальные данные
+// из data/v3/markers.json. Только эта ветка бутстрапа — app.js (v1) не трогается.
 //
 // Видимость — та же логика, что в v1 (app.js renderMarkers): маркер скрыт, если
 // его status === "hidden", ИЛИ если он привязан к зоне (m.zone) и та зона тоже
@@ -53,10 +53,10 @@
   }
 
   Promise.all([
-    fetch('data/v2/markers.json', {cache: 'no-store'}).then(function (r) {
+    fetch('data/v3/markers.json', {cache: 'no-store'}).then(function (r) {
       return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status));
     }),
-    fetch('data/v2/zones.json', {cache: 'no-store'}).then(function (r) {
+    fetch('data/v3/zones.json', {cache: 'no-store'}).then(function (r) {
       return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status));
     })
   ]).then(function (results) {
@@ -100,7 +100,7 @@
       shown++;
     });
 
-    console.log('markers-engine: ' + shown + '/' + markers.length + ' маркеров показано (data/v2/markers.json)');
+    console.log('markers-engine: ' + shown + '/' + markers.length + ' маркеров показано (data/v3/markers.json)');
   }).catch(function (err) {
     console.error('markers-engine: не удалось загрузить данные', err);
   });

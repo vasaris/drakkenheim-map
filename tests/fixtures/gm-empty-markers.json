@@ -1,6 +1,6 @@
 {
-  "schema": "dk-map/v2",
-  "mapOrientation": "v2",
+  "schema": "dk-map/v3",
+  "mapOrientation": "v3",
   "items": [
     {
       "id": "fx_empty_marker_1",

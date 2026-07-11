@@ -23,20 +23,20 @@
   // ?gmfixture=1 -> tests/fixtures/gm-fixture-*.json (enc-блоки на тестовом пароле);
   // ?gmfixture=empty -> tests/fixtures/gm-empty-*.json (0 enc-блоков, флоу "задать пароль");
   // ?gmfixture=lifecycle -> tests/fixtures/lifecycle-*.json (клон РЕАЛЬНОЙ геометрии/имён
-  // data/v2 — 9 зон + 2 маркера, но gmText целиком перешифрован фикстурным паролем при
-  // генерации фикстуры — боевой шифртекст туда не попадает; см. tests/editor.spec.js
-  // сценарий 13, сквозной жизненный цикл на реалистичном объёме данных).
-  // Без параметра — боевые data/v2/*.json. См. tests/gm.spec.js.
+  // data/v3, но gmText целиком перешифрован фикстурным паролем при генерации фикстуры —
+  // боевой шифртекст туда не попадает; см. tests/editor.spec.js сценарий 13, сквозной
+  // жизненный цикл на реалистичном объёме данных).
+  // Без параметра — боевые data/v3/*.json. См. tests/gm.spec.js.
   var Q = new URLSearchParams(location.search);
   var fx = Q.get('gmfixture');
   var ZONES_URL = fx === 'empty' ? 'tests/fixtures/gm-empty-zones.json'
     : fx === 'lifecycle' ? 'tests/fixtures/lifecycle-zones.json'
     : fx ? 'tests/fixtures/gm-fixture-zones.json'
-    : 'data/v2/zones.json';
+    : 'data/v3/zones.json';
   var MARKERS_URL = fx === 'empty' ? 'tests/fixtures/gm-empty-markers.json'
     : fx === 'lifecycle' ? 'tests/fixtures/lifecycle-markers.json'
     : fx ? 'tests/fixtures/gm-fixture-markers.json'
-    : 'data/v2/markers.json';
+    : 'data/v3/markers.json';
 
   var zones = [], markers = [];
   var gmKey = null, gmSalt = null;

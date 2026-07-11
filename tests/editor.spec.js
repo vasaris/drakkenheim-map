@@ -58,7 +58,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
     const after = await page.evaluate(() => window.DKEditor.getZones().length);
     expect(after).toBe(before + 1);
     await expect(page.locator('#side')).toContainText(`Зон: ${after}`);
-    const draft = await page.evaluate(() => JSON.parse(localStorage.getItem('dk_work_v2')));
+    const draft = await page.evaluate(() => JSON.parse(localStorage.getItem('dk_work_v3')));
     expect(draft.zones.length).toBe(after);
   });
 
@@ -78,7 +78,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
     expect(after).toBe(before);
     await expect(page.locator('#drawZoneBtn')).toHaveText('Рисовать зону');
     // черновик не заведён этим действием (cancelDraw не пишет localStorage)
-    expect(await page.evaluate(() => localStorage.getItem('dk_work_v2'))).toBeNull();
+    expect(await page.evaluate(() => localStorage.getItem('dk_work_v3'))).toBeNull();
   });
 
   test('03) < 3 точек на «Завершить» — рисование отменяется с тостом, не «висит»', async ({ page }) => {
@@ -187,7 +187,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
     expect(typeof gmText.iv).toBe('string'); expect(gmText.iv.length).toBeGreaterThan(0);
     expect(typeof gmText.ct).toBe('string'); expect(gmText.ct.length).toBeGreaterThan(0);
 
-    const lsGmText = await page.evaluate(() => JSON.parse(localStorage.getItem('dk_work_v2')).zones[0].gmText);
+    const lsGmText = await page.evaluate(() => JSON.parse(localStorage.getItem('dk_work_v3')).zones[0].gmText);
     expect(lsGmText).toEqual(gmText); // ровно то же самое — не отдельная несинхронная копия
   });
 
@@ -236,7 +236,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
     const afterZones = await page.evaluate(() => window.DKEditor.getZones().length);
     expect(afterZones).toBe(beforeZones - 1);
     await expect(page.locator('.dk-editor-zone')).toHaveCount(0);
-    const draft = await page.evaluate(() => JSON.parse(localStorage.getItem('dk_work_v2')));
+    const draft = await page.evaluate(() => JSON.parse(localStorage.getItem('dk_work_v3')));
     expect(draft.zones.length).toBe(afterZones);
 
     // маркер аналогично
@@ -272,8 +272,8 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
     const filePath = await download.path();
     const doc = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 
-    expect(doc.schema).toBe('dk-map/v2');
-    expect(doc.mapOrientation).toBe('v2');
+    expect(doc.schema).toBe('dk-map/v3');
+    expect(doc.mapOrientation).toBe('v3');
     expect(Array.isArray(doc.items)).toBe(true);
     const withSecret = doc.items.find((z) => z.gmText && z.gmText.enc);
     expect(withSecret, 'ожидался хотя бы один зашифрованный gmText в экспорте').toBeTruthy();
@@ -297,14 +297,14 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
     await page.click('.dk-editor-zone');
     await page.fill('#z_name', 'Правка перед конфликтом');
     await page.waitForTimeout(100);
-    expect(await page.evaluate(() => !!localStorage.getItem('dk_work_v2_baseline'))).toBe(true);
+    expect(await page.evaluate(() => !!localStorage.getItem('dk_work_v3_baseline'))).toBe(true);
 
     await page.click('#masterBtn'); // lock
 
     await page.route('**/gm-empty-zones.json', (route) => route.fulfill({
       status: 200, contentType: 'application/json',
       body: JSON.stringify({
-        schema: 'dk-map/v2', mapOrientation: 'v2',
+        schema: 'dk-map/v3', mapOrientation: 'v3',
         items: [{
           id: 'fx_empty_zone_1', name: 'Изменено извне', band: '', owner: '[TBD]', status: 'known',
           playerText: 'x', gmText: '', polygon: [[0.1, 0.1], [0.2, 0.1], [0.2, 0.2], [0.1, 0.2]],
@@ -326,7 +326,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
 
     expect(await page.evaluate(() => window.DKEditor.hasConflict())).toBe(false);
     expect(await page.evaluate(() => window.DKEditor.getZones()[0].name)).toBe('Изменено извне');
-    expect(await page.evaluate(() => localStorage.getItem('dk_work_v2'))).toBeNull();
+    expect(await page.evaluate(() => localStorage.getItem('dk_work_v3'))).toBeNull();
   });
 
   test('12) редактор недоступен без разлочки', async ({ page }) => {
@@ -342,7 +342,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
 
   // 13) сквозной жизненный цикл на КЛОНЕ боевой геометрии (9 реальных зон + 2 реальных
   // маркера, tests/fixtures/lifecycle-{zones,markers}.json — та же геометрия/имена, что в
-  // data/v2, но gmText целиком перешифрован фикстурным паролем при генерации фикстуры;
+  // data/v3, но gmText целиком перешифрован фикстурным паролем при генерации фикстуры;
   // боевой шифртекст/пароль в тесте не участвуют вообще). Заменяет ручную приёмку —
   // Иван делает короткую живую проверку поверх этого прогона, не полную вручную.
   //
@@ -363,7 +363,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
 
     await test.step('N зон + 2 маркера, с подписями', async () => {
       // Число зон читаем из живых данных, а не хардкодим — lifecycle-фикстура клонирует
-      // ТЕКУЩИЙ data/v2/zones.json (см. tests/global-setup.js), число реальных районов
+      // ТЕКУЩИЙ data/v3/zones.json (см. tests/global-setup.js), число реальных районов
       // меняется по мере правки мировых данных (world data commits).
       baseZones = await page.evaluate(() => window.DKEditor.getZones().length);
       baseMarkers = await page.evaluate(() => window.DKEditor.getMarkers().length);
@@ -472,8 +472,8 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
         page.click('#exportZones'),
       ]);
       const doc = JSON.parse(fs.readFileSync(await download.path(), 'utf8'));
-      expect(doc.schema).toBe('dk-map/v2');
-      expect(doc.mapOrientation).toBe('v2');
+      expect(doc.schema).toBe('dk-map/v3');
+      expect(doc.mapOrientation).toBe('v3');
       expect(doc.items.length).toBe(baseZones + 1);
       const encCount = doc.items.filter((z) => z.gmText && z.gmText.enc === true).length;
       expect(encCount).toBeGreaterThan(0);
@@ -511,7 +511,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
       page.once('dialog', (d) => d.accept());
       await page.click('#resetWork');
       await page.waitForTimeout(150);
-      expect(await page.evaluate(() => localStorage.getItem('dk_work_v2'))).toBeNull();
+      expect(await page.evaluate(() => localStorage.getItem('dk_work_v3'))).toBeNull();
       expect(await page.evaluate(() => window.DKEditor.getZones().length)).toBe(baseZones);
     });
 
@@ -520,7 +520,7 @@ test.describe('E2E: авторский режим (Ф3.5б editor-engine.js)', (
       await page.waitForTimeout(150);
       await expect(page.locator('#side')).toHaveClass(/hidden/);
       await expect(page.locator('.dk-editor-zone')).toHaveCount(0);
-      // read-слой markers-engine.js — реальные data/v2/markers.json, независимо от ?gmfixture
+      // read-слой markers-engine.js — реальные data/v3/markers.json, независимо от ?gmfixture
       await expect(page.locator('.dk-marker[data-marker-id="embervud"]')).toHaveCount(1);
       expect(await page.evaluate(() => window.DKGM.isUnlocked())).toBe(false);
     });

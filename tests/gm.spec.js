@@ -1,4 +1,4 @@
-// Ф3.5а: E2E для GM-слоя (?engine=leaflet). Ничего не трогает боевые data/v2/*.json —
+// Ф3.5а: E2E для GM-слоя (?engine=leaflet). Ничего не трогает боевые data/v3/*.json —
 // все три сценария идут через tests/fixtures/gm-{fixture,empty}-*.json (?gmfixture=...),
 // с тестовым паролем (не боевым, см. tests/fixtures/*.json — сгенерированы отдельно).
 // Проверяем и DOM (что реально видит GM), и window.DKGM (состояние без хардкода текстов
