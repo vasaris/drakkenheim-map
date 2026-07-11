@@ -104,6 +104,17 @@
     .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); })
     .then(function (data) {
       var zones = (data && data.items) || [];
+      // Ф3.6-fix2б: outskirts красит весь лист (внутренняя дыра убрана — см.
+      // fix-outskirts-nohole-v3.mjs), городские зоны обязаны рисоваться ПОСЛЕ
+      // неё, чтобы их плотность легла поверх (SVG-маска красит перекрытие по
+      // обычному document order — последний рисуется поверх, подтверждено рендер-
+      // тестом в отчёте). data/v3/zones.json на момент фикса несёт outskirts
+      // первой записью, но порядок в JSON-массиве — не гарантия сама по себе
+      // (редактор может его когда-нибудь переставить) — сортируем явно здесь,
+      // а не полагаемся молча на порядок файла.
+      zones = zones.slice().sort(function (a, b) {
+        return (a.id === 'outskirts' ? 0 : 1) - (b.id === 'outskirts' ? 0 : 1);
+      });
       zones.forEach(function (z) {
         if (!z.polygon || z.polygon.length < 3) return;
         maskG.appendChild(el('polygon', {
