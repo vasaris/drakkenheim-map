@@ -5,9 +5,17 @@
 //      вообще — статусы от тумана отвязаны, см. window.DKFog ниже), blur ~34.5
 //      (формула стенда, не менялась), breathe 17s (вердикт B, не менялась).
 //   2) Deep Haze — полигоны из data/v3/haze.json (канон DoD, не игровые статусы),
-//      заметно плотнее базовой; kind="crater" — максимальная плотность. Свой breathe
-//      с фазовым сдвигом относительно базового слоя (см. ANIM_DELAY_HAZE) — не в такт
-//      с базовым, для живости, а не механической синхронности.
+//      заметно плотнее базовой; kind="crater" — максимальная плотность. СТАТИЧЕН,
+//      без своего breathe (канонично: глубина «стоит как пелена», не дышит).
+//      Перф-изоляция (замер, 3 варианта x 3 повтора, headed, static 10s):
+//      phase-sync=0 (обе анимации в такт)      -> dropped% не улучшился (~12%, было ~13%)
+//      Deep Haze без анимации, база дышит      -> dropped% = 0%, paintCount = 0
+//      обе статичны (контроль)                  -> ~0% (N слишком мал, некомпаративно)
+//      Причина: .leaf-haze-deep/.leaf-haze-crater лежат ВНУТРИ filter="url(#leafHazeFeather)" —
+//      анимация их opacity форсит перерисовку (feGaussianBlur на весь мир) каждый кадр;
+//      .leaf-fog-rect снаружи фильтра — чистый композиторный opacity, paintCount=0.
+//      Синхронизация фаз не помогает, т.к. дело не в рассинхроне, а в самом факте
+//      анимирования свойства внутри отфильтрованной группы.
 // Deep Haze не показывается в попапах/панели — игрок видит его на карте глазами,
 // этого достаточно (механика — в GM-заметках, вне приложения).
 //
@@ -35,8 +43,6 @@
   var DEEP_FILL = '#e0e0e0';   // Deep Haze (kind=deep) — заметно плотнее базовой
   var CRATER_FILL = '#ffffff'; // kind=crater — максимальная плотность
 
-  var ANIM_DELAY_HAZE = '-8.5s'; // фазовый сдвиг Deep Haze относительно базового breathe (17s) — не в такт, для живости
-
   var SVGNS = 'http://www.w3.org/2000/svg';
   function el(tag, attrs) {
     var e = document.createElementNS(SVGNS, tag);
@@ -56,11 +62,12 @@
     '.leaf-fog-rect{opacity:.96;}' +
     '.leaf-fog-anim .leaf-fog-rect{animation:leafHazeBreathe 17s ease-in-out infinite alternate;}' +
     '@keyframes leafHazeBreathe{from{opacity:.9;}to{opacity:1;}}' +
-    '.leaf-haze-deep,.leaf-haze-crater{animation:leafHazeBreathe 17s ease-in-out infinite alternate;animation-delay:' + ANIM_DELAY_HAZE + ';}' +
     // Ф3.6-fix2в: reveal-transition (fill 1.1s на смену статуса зоны) убран целиком —
     // Deep Haze больше не меняет форму/плотность в рантайме (грузится один раз из
     // haze.json и живёт статично), менять-с-анимацией больше нечего.
-    '@media (prefers-reduced-motion:reduce){.leaf-fog-anim .leaf-fog-rect,.leaf-haze-deep,.leaf-haze-crater{animation:none;opacity:.96;}}';
+    // Перф-фикс (см. шапку файла): Deep Haze/crater БЕЗ анимации — внутри отфильтрованной
+    // группы breathe форсил перерисовку feGaussianBlur каждый кадр, дал измеренные дропы.
+    '@media (prefers-reduced-motion:reduce){.leaf-fog-anim .leaf-fog-rect{animation:none;opacity:.96;}}';
   document.head.appendChild(style);
 
   var svg = el('svg', {viewBox: '0 0 ' + DK.IMG_W + ' ' + DK.IMG_H, 'class': 'leaf-fog-anim'});
