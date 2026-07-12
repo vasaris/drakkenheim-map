@@ -20,10 +20,12 @@ playwright-report/
 artifacts/
 
 # Ф3.5а: pre-rotation backups from scripts/rotate-passphrase.mjs — local safety net only
-data/v2/*.bak
+# (Ф5: rotate-passphrase.mjs repointed data/v2 -> data/v3, see script header)
+data/v3/*.bak
 
-# Ф3.5б: lifecycle e2e fixture — generated fresh from data/v2 by tests/global-setup.js
-# before every test run (fixture password only); committing a snapshot is exactly the
+# Ф3.5б: lifecycle e2e fixture — generated fresh from data/v3 by tests/global-setup.js
+# (Ф3.5в: source switched from data/v2 to data/v3) before every test run (fixture
+# password only); committing a snapshot is exactly the
 # staleness bug this replaced (screenshot/test not reflecting a data edit)
 tests/fixtures/lifecycle-zones.json
 tests/fixtures/lifecycle-markers.json

@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-// Ф3.5а Фикс (б): смена мастер-пароля / апгрейд формата шифр-блоков gmText в data/v2/*.json.
+// Ф3.5а Фикс (б): смена мастер-пароля / апгрейд формата шифр-блоков gmText в data/v3/*.json.
+// (Ф5: репойнт с data/v2 на data/v3 — редактор переключился на v3 ещё в Ф3.5в/Ф3.6,
+// этот скрипт остался нацеленным на data/v2 и был бы мёртв после декомиссии v2.)
 //
 // Пароли — ТОЛЬКО интерактивным вводом (маскированный TTY-прожде), никогда через argv/env:
 // они не должны оседать в истории шелла, ps, ci-логах и т.п.
@@ -26,8 +28,8 @@ const DKCrypto = DKCryptoModule;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
-const ZONES = path.join(ROOT, 'data', 'v2', 'zones.json');
-const MARKERS = path.join(ROOT, 'data', 'v2', 'markers.json');
+const ZONES = path.join(ROOT, 'data', 'v3', 'zones.json');
+const MARKERS = path.join(ROOT, 'data', 'v3', 'markers.json');
 
 /* ---------- маскированный ввод пароля без внешних зависимостей ---------- */
 function promptPassword(question) {
@@ -122,7 +124,7 @@ async function main() {
   const encCount = [...zonesDoc.items, ...markersDoc.items].filter((it) => DKCrypto.isEnc(it.gmText)).length;
 
   console.log('=== rotate-passphrase' + (upgrade ? ' --upgrade' : '') + ' ===');
-  console.log(`data/v2/zones.json: ${zonesDoc.items.length} зон, data/v2/markers.json: ${markersDoc.items.length} маркеров, из них ${encCount} с зашифрованным gmText.`);
+  console.log(`data/v3/zones.json: ${zonesDoc.items.length} зон, data/v3/markers.json: ${markersDoc.items.length} маркеров, из них ${encCount} с зашифрованным gmText.`);
   if (upgrade) {
     console.log('Апгрейд формата (без смены пароля): введите один и тот же пароль дважды ниже.');
   }
@@ -163,8 +165,8 @@ async function main() {
   writeFileSync(MARKERS, JSON.stringify({ ...markersDoc, items: result.markersItems }, null, 2) + '\n');
 
   console.log(`\nГотово: перешифровано ${encCount} блок(ов) в ${result.zonesItems.length} зонах и ${result.markersItems.length} маркерах.`);
-  console.log('Бэкапы (не коммитить, есть в .gitignore): data/v2/zones.json.bak, data/v2/markers.json.bak');
-  console.log('Дальше: scripts/check-secrets.sh, затем git diff --stat data/v2/, затем коммит.');
+  console.log('Бэкапы (не коммитить, есть в .gitignore): data/v3/zones.json.bak, data/v3/markers.json.bak');
+  console.log('Дальше: scripts/check-secrets.sh, затем git diff --stat data/v3/, затем коммит.');
 }
 
 const isMain = process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url;
